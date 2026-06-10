@@ -53,6 +53,17 @@ export function getDirectDriveUrl(url: string): string {
   if (!url) return '';
   const trimmed = url.trim();
   
+  // 1. Check exact cache match first (e.g. for complete direct URLs cached locally)
+  if (typeof window !== 'undefined') {
+    const cached = window.localStorage?.getItem('local_img_' + trimmed);
+    if (cached) return cached;
+  }
+
+  // 2. Support blob: and data: URLs natively
+  if (trimmed.startsWith('data:image/') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+  
   if (trimmed.startsWith('TASK_')) {
     if (typeof window !== 'undefined') {
       const cached = window.localStorage?.getItem('local_img_' + trimmed);
@@ -64,14 +75,10 @@ export function getDirectDriveUrl(url: string): string {
   // Check if the URL is an Apps Script URL containing a file parameter with local cached data
   if (typeof window !== 'undefined' && (trimmed.includes('?file=') || trimmed.includes('&file='))) {
     const fileParam = trimmed.split('file=')[1]?.split('&')[0];
-    if (fileParam && fileParam.startsWith('TASK_')) {
+    if (fileParam) {
       const cached = window.localStorage?.getItem('local_img_' + fileParam);
       if (cached) return cached;
     }
-  }
-
-  if (trimmed.startsWith('data:image/')) {
-    return trimmed;
   }
   
   const isRawBase64 = trimmed.startsWith('/9j/') || 

@@ -646,64 +646,66 @@ export default function App() {
           MAIN HEADER STYLED UTILITY RAILS
           ----------------------------------------------------------------------- */}
       <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 shadow" id="main_navigation_header">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex items-center justify-between gap-2">
           
           {/* Brand Identity / Hotel Harris logo placeholder */}
-          <div className="flex items-center gap-3 w-full sm:w-auto text-left">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/10 shrink-0">
-              <Hotel className="w-5.5 h-5.5 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 text-left">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md shadow-orange-500/10 shrink-0">
+              <Hotel className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 text-white" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5 leading-none">
-                <h1 className="text-sm font-black tracking-tight text-white uppercase sm:text-base font-sans">
+              <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
+                <h1 className="text-xs sm:text-sm font-black tracking-tight text-white uppercase sm:text-base font-sans">
                   HARRIS <span className="text-orange-500">GUBENG</span>
                 </h1>
-                <span className="text-[9px] bg-orange-500/15 text-orange-400 font-semibold px-1.5 py-0.5 rounded font-mono">
+                <span className="text-[8px] sm:text-[9px] bg-orange-500/15 text-orange-400 font-semibold px-1 sm:px-1.5 py-0.5 rounded font-mono">
                   SBY
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-mono tracking-wider mt-0.5 uppercase">
+              <p className="text-[8px] sm:text-[10px] text-slate-400 font-mono tracking-wider mt-0.5 uppercase">
                 Work Order Task Operations
               </p>
             </div>
           </div>
 
           {/* Database Mode Switcher & User Profile Actions */}
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0" id="header_profile_actions">
             
-            {/* Database Sync indicator */}
-            <div
-              className="flex items-center gap-2 px-3.5 py-2 border rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border-emerald-900/30"
-            >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Db: Supabase (Production)</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-
             {/* User credentials banner drawer */}
-            <div className="flex items-center gap-3.5 pl-3.5 border-l border-slate-800">
-              <div className="text-right hidden md:block">
-                <p className="text-xs font-bold text-slate-200">{currentUser.fullname}</p>
-                <p className="text-[10px] text-slate-500 font-mono flex items-center justify-end gap-1 font-bold uppercase">
-                  <span>ROLE:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+              <div className="text-right min-w-0 flex flex-col items-end justify-center">
+                <p className="text-[9.5px] sm:text-[11px] font-black text-slate-200 whitespace-normal break-words leading-tight text-right max-w-[110px] xs:max-w-[130px] sm:max-w-[200px]">
+                  {currentUser.fullname}
+                </p>
+                <div className="flex items-center justify-end gap-1 font-mono text-[7.5px] sm:text-[9px] font-bold mt-0.5 leading-none">
                   <span className={currentUser.role === 'ADMIN' ? 'text-orange-400' : 'text-blue-400'}>
                     {currentUser.role}
                   </span>
-                </p>
+                </div>
+                
+                {/* S-BASE indicator moved directly under role */}
+                <div 
+                  className="flex items-center gap-0.5 sm:gap-1 px-1 py-0.5 border rounded text-[6.5px] sm:text-[8px] font-extrabold uppercase mt-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 leading-none select-none shrink-0"
+                  title="Database Synchronized with Supabase Cloud"
+                >
+                  <Database className="w-2.2 h-2.2 sm:w-3 sm:h-3 text-emerald-400" />
+                  <span>S-BASE</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
               </div>
 
               {/* Avatar Icon */}
-              <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shadow-inner">
-                <UserIcon className="w-4.5 h-4.5 text-orange-500" />
+              <div className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-lg sm:rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shadow-inner shrink-0">
+                <UserIcon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-orange-500" />
               </div>
 
               {/* Log out trigger */}
               <button
                 onClick={handleLogout}
-                className="p-2 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-750 rounded-xl text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                className="p-1 sm:p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-750 rounded-lg sm:rounded-xl text-slate-500 hover:text-red-400 transition-colors cursor-pointer shrink-0"
                 title="Keluar Akun"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
@@ -713,42 +715,42 @@ export default function App() {
             ADMIN PERSISTENT ROUTING PANEL NAVIGATION TABS
             ----------------------------------------------------------------- */}
         {currentUser.role === 'ADMIN' && (
-          <div className="bg-slate-950 border-t border-slate-850/80">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-start gap-1" id="admin_main_tab_deck">
+          <div className="bg-slate-950 border-t border-slate-850/80 w-full overflow-hidden">
+            <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8 grid grid-cols-3 sm:flex sm:justify-start sm:gap-1" id="admin_main_tab_deck">
               <button
                 onClick={() => setAdminTab('DASHBOARD')}
-                className={`py-3 px-4.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+                className={`py-2 px-0.5 sm:py-3 sm:px-4.5 text-[9px] xs:text-[10px] sm:text-xs font-bold border-b-2 flex flex-col xs:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
                   adminTab === 'DASHBOARD'
-                    ? 'border-orange-500 text-white bg-slate-900/40'
-                    : 'border-transparent text-slate-405 text-slate-400 hover:text-white'
+                    ? 'border-orange-500 text-white bg-slate-900/40 font-extrabold'
+                    : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4 text-orange-500" />
-                <span>Teknisi Logs Dashboard</span>
+                <LayoutDashboard className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                <span className="truncate">Logs Dashboard</span>
               </button>
 
               <button
                 onClick={() => setAdminTab('MASTER_PANEL')}
-                className={`py-3 px-4.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+                className={`py-2 px-0.5 sm:py-3 sm:px-4.5 text-[9px] xs:text-[10px] sm:text-xs font-bold border-b-2 flex flex-col xs:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
                   adminTab === 'MASTER_PANEL'
-                    ? 'border-orange-500 text-white bg-slate-900/40'
-                    : 'border-transparent text-slate-404 text-slate-400 hover:text-white'
+                    ? 'border-orange-500 text-white bg-slate-900/40 font-extrabold'
+                    : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                <Settings className="w-4 h-4 text-orange-500" />
-                <span>Administrator Panel (CRUD / CRD)</span>
+                <Settings className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                <span className="truncate">Admin Panel</span>
               </button>
 
               <button
                 onClick={() => setAdminTab('CSV_ARCHIVE')}
-                className={`py-3 px-4.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+                className={`py-2 px-0.5 sm:py-3 sm:px-4.5 text-[9px] xs:text-[10px] sm:text-xs font-bold border-b-2 flex flex-col xs:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
                   adminTab === 'CSV_ARCHIVE'
-                    ? 'border-orange-500 text-white bg-slate-900/40'
-                    : 'border-transparent text-slate-404 text-slate-400 hover:text-white'
+                    ? 'border-orange-500 text-white bg-slate-900/40 font-extrabold'
+                    : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                <FileSpreadsheet className="w-4 h-4 text-orange-500" />
-                <span>Arsip History (CSV)</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                <span className="truncate">Arsip (CSV)</span>
               </button>
             </div>
           </div>
@@ -758,7 +760,7 @@ export default function App() {
       {/* -----------------------------------------------------------------------
           MAIN CONTENT CONTAINER (ROUTING BY ACTIVE TAB & ROLE)
           ----------------------------------------------------------------------- */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <main className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 mt-4 sm:mt-8">
         
         {/* Real-time pub/sub trigger assist box (EXCLUSIVELY IN MOCK MODE TO AID EVALUATION) */}
         {dbMode === 'MOCK' && (
@@ -822,15 +824,15 @@ export default function App() {
           <ArchiveHistoryCsv />
         ) : (
           /* View default: Main Technical Work Order Logs and Filtering Dashboard */
-          <div className="space-y-8" id="technical_operations_dashboard">
+          <div className="space-y-5 sm:space-y-8" id="technical_operations_dashboard">
             
             {/* Action Bar containing Creator Button */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-900/40 p-6 border border-slate-800 rounded-3xl relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 justify-between items-start sm:items-center bg-slate-900/40 p-3 sm:p-6 border border-slate-800 rounded-xl sm:rounded-3xl relative overflow-hidden">
               <div className="text-left">
-                <h2 className="text-lg font-extrabold text-white">
+                <h2 className="text-xs sm:text-base md:text-lg font-extrabold text-white">
                   MANAJEMEN TASK OPERASIONAL
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-[9px] sm:text-xs text-slate-400 mt-0.5 sm:mt-0 leading-relaxed">
                   Melaporkan, mengontrol, dan memverifikasi perbaikan infrastruktur Hotel Harris Gubeng.
                 </p>
               </div>
@@ -840,10 +842,10 @@ export default function App() {
                   setActiveTaskToEdit(null);
                   setIsFormOpen(true);
                 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 font-bold text-white py-3 px-6 rounded-2xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-orange-500/15 cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-orange-500 hover:bg-orange-600 font-bold text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg sm:rounded-2xl text-[10px] sm:text-xs tracking-wider uppercase transition-all shadow-lg shadow-orange-500/15 cursor-pointer mt-0.5 sm:mt-0"
                 id="create_task_button"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3 h-3" />
                 <span>Tambah Pekerjaan (Work Order)</span>
               </button>
             </div>

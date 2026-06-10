@@ -280,37 +280,37 @@ export default function TaskTable({
       </div>
 
       {/* TABLE DATA CONTAINER */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-lg shadow-black/15">
-        <div className="p-6 border-b border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-950/20">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-3xl overflow-hidden shadow-lg shadow-black/15">
+        <div className="p-3 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row gap-2.5 sm:gap-4 justify-between items-center bg-slate-950/20">
           <div className="text-left w-full sm:w-auto">
-            <h3 className="text-sm font-extrabold text-white tracking-wide uppercase">RIWAYAT TASK PEKERJAAN</h3>
+            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">RIWAYAT TASK PEKERJAAN</h3>
           </div>
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
-            <div className="flex bg-slate-950 border border-slate-850 p-1 rounded-xl">
+          <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto justify-start sm:justify-end">
+            <div className="flex bg-slate-950 border border-slate-850 p-0.5 rounded-lg">
               <button
                 onClick={() => toggleSort('date')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer ${
+                className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[8.5px] sm:text-[10px] font-bold cursor-pointer ${
                   sortBy === 'date' ? 'bg-orange-500 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <span>Tanggal</span>
-                <ArrowUpDown className="w-3 h-3" />
+                <ArrowUpDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </button>
               <button
                 onClick={() => toggleSort('tech')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer ${
+                className={`flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[8.5px] sm:text-[10px] font-bold cursor-pointer ${
                   sortBy === 'tech' ? 'bg-orange-500 text-white shadow' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <span>Teknisi</span>
-                <ArrowUpDown className="w-3 h-3" />
+                <ArrowUpDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </button>
             </div>
             {isUserAdmin && (
-              <>
+              <div className="flex items-center gap-1">
                 <PdfExportButton filteredTasks={sortedTasks} />
                 <CsvExportButton filteredTasks={sortedTasks} />
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -455,38 +455,38 @@ export default function TaskTable({
             </div>
 
             {/* MOBILE LAYOUT */}
-            <div className="lg:hidden p-4 space-y-4" id="mobile_tasks_list">
+            <div className="lg:hidden p-2.5 space-y-2.5" id="mobile_tasks_list">
               {paginatedTasks.map((t) => {
                 const isEditable = isUserAdmin || t.status === 'Pending';
                 return (
                   <div
                     key={t.id}
-                    className="p-5 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-4 flex flex-col justify-between text-left"
+                    className="p-3 rounded-xl bg-slate-950/40 border border-slate-850 space-y-2.5 flex flex-col justify-between text-left"
                   >
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-center text-xs">
                       <div>
-                        <span className="text-[10px] font-bold text-orange-500 font-mono uppercase">Log ID: {t.id}</span>
-                        <p className="text-[11px] font-mono text-slate-400 font-semibold mt-0.5 flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[9px] font-bold text-orange-500 font-mono tracking-tight block">LOG ID: {t.id}</span>
+                        <p className="text-[10px] font-mono text-slate-400 font-semibold mt-0.5 flex flex-wrap gap-1 items-center">
                           <span>{t.date}</span>
-                          <span className="text-[10px] text-slate-500">({t.start_time}-{t.end_time})</span>
-                          <span className="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/15 text-[9px] font-bold">Shift {t.shift}</span>
+                          <span className="text-[9px] text-slate-500">({t.start_time}-{t.end_time})</span>
+                          <span className="px-1 py-0.2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/15 text-[8px] font-bold">Shift {t.shift}</span>
                         </p>
                       </div>
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[9px] ${
                           t.status === 'Complete'
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-orange-500/10 text-orange-400'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
+                            : 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
                         }`}
                       >
                         {t.status === 'Complete' ? 'Selesai' : 'Pending'}
                       </span>
                     </div>
-                    <div className="flex items-start gap-3.5">
+                    <div className="flex items-start gap-2.5">
                       {t.image_url ? (
                         <div
                           onClick={() => onViewDetails(t)}
-                          className="w-12 h-12 rounded-lg overflow-hidden border border-slate-800 bg-black relative cursor-pointer hover:border-orange-500 duration-150 shrink-0 group animate-fade-in"
+                          className="w-10 h-10 rounded overflow-hidden border border-slate-800 bg-black relative cursor-pointer hover:border-orange-500 duration-150 shrink-0 group animate-fade-in"
                           title="Klik untuk detail & foto lengkap"
                         >
                           <SafeImage
@@ -496,42 +496,62 @@ export default function TaskTable({
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-lg border border-slate-800/80 bg-slate-950/50 flex items-center justify-center text-slate-600 shrink-0 select-none">
-                          <span className="text-[9px] font-bold opacity-30 font-sans">NO</span>
+                        <div className="w-10 h-10 rounded border border-slate-800 bg-slate-950/50 flex items-center justify-center text-slate-600 shrink-0 select-none">
+                          <span className="text-[8px] font-bold opacity-35 font-sans">NO</span>
                         </div>
                       )}
-                      <div className="flex-1 space-y-1.5">
-                        <div className="flex flex-wrap gap-1.5 mb-1 bg-[#091526]/40 p-1.5 rounded-lg border border-slate-850/40 w-fit">
-                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/15">
+                      <div className="flex-1 space-y-1 min-w-0">
+                        <div className="flex flex-wrap gap-1 mb-0.5 bg-[#091526]/40 p-1 rounded border border-slate-850/40 w-fit">
+                          <span className="inline-block px-1 py-0.2 rounded text-[8px] font-bold bg-amber-500/10 text-amber-550 border border-amber-500/15">
                             Kategori: {t.specialty || '-'}
                           </span>
-                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/15">
-                            Tipe: {t.maintenance_type || '-'}
+                          <span className="inline-block px-1 py-0.2 rounded text-[8px] font-bold bg-cyan-500/10 text-cyan-450 border border-cyan-500/15">
+                            Tipe: {t.maintenance_type?.replace(' Maintenance', '') || '-'}
                           </span>
                         </div>
-                        <p className="text-xs font-bold text-slate-200">
-                          {t.area_type} <span className="text-[10px] text-slate-400 font-mono">({t.area_detail || '-'})</span>
+                        <p className="text-[11px] font-bold text-slate-100 truncate">
+                          {t.area_type} <span className="text-[9.5px] text-slate-400 font-mono font-medium">({t.area_detail || '-'})</span>
                         </p>
-                        <p className="text-[11px] text-slate-400 line-clamp-3 leading-relaxed">
+                        <p className="text-[10px] text-slate-400 line-clamp-2 leading-normal">
                           {t.description}
                         </p>
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-slate-800/50 flex justify-end gap-2.5">
-                      <button
-                        onClick={() => onViewDetails(t)}
-                        className="flex-1 py-2 bg-slate-900 text-slate-350 text-xs font-bold border border-slate-805 rounded-xl flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-orange-500" />
-                        <span>Tinjau</span>
-                      </button>
-                      <button
-                        onClick={() => onEditTask(t)}
-                        disabled={!isEditable}
-                        className="flex-1 py-2 bg-slate-900 text-slate-350 text-xs font-bold border border-slate-805 rounded-xl disabled:opacity-20 cursor-pointer"
-                      >
-                        Edit
-                      </button>
+                    <div className="pt-2 border-t border-slate-850 flex justify-between items-center bg-[#0d1624]/20 -mx-3 -mb-3 p-2 sm:p-2.5 rounded-b-xl">
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className="text-[8px] font-bold text-slate-550 font-mono tracking-wider">TEKNISI:</span>
+                        <span className="text-[9.5px] font-extrabold text-slate-300 truncate">{t.technician_name || '-'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => onViewDetails(t)}
+                          className="w-7.5 h-7.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-lg flex items-center justify-center hover:border-orange-500 duration-150 cursor-pointer shadow-sm active:scale-95"
+                          title="Tinjau Detail"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-orange-500" />
+                        </button>
+                        <button
+                          onClick={() => onEditTask(t)}
+                          disabled={!isEditable}
+                          className={`w-7.5 h-7.5 border rounded-lg flex items-center justify-center cursor-pointer shadow-sm active:scale-95 duration-100 ${
+                            isEditable
+                              ? 'bg-slate-900 border-slate-855 text-slate-300 hover:border-orange-500 hover:text-white'
+                              : 'opacity-20 cursor-not-allowed border-slate-900 bg-slate-950/20 text-slate-550'
+                          }`}
+                          title="Edit Pekerjaan"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-orange-400" />
+                        </button>
+                        {isUserAdmin && (
+                          <button
+                            onClick={() => setTaskToDelete(t)}
+                            className="w-7.5 h-7.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 rounded-lg flex items-center justify-center cursor-pointer active:scale-95 duration-100"
+                            title="Hapus Permanen"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

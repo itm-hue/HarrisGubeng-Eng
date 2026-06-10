@@ -45,7 +45,7 @@ export default function MetricCards({ tasks, currentUserRole }: MetricCardsProps
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8" id="metric_cards_grid">
+    <div className="grid grid-cols-3 gap-1.5 sm:gap-5 mb-4 sm:mb-8" id="metric_cards_grid">
       {cardsSchema.map((card, idx) => {
         const IconComponent = card.icon;
         return (
@@ -54,29 +54,29 @@ export default function MetricCards({ tasks, currentUserRole }: MetricCardsProps
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: idx * 0.1 }}
-            className={`p-6 bg-slate-900/50 backdrop-blur-md border rounded-2xl flex items-center justify-between shadow-lg shadow-black/10 relative overflow-hidden group ${card.color}`}
+            className={`p-2 sm:p-5.5 bg-slate-900/50 backdrop-blur-md border rounded-lg sm:rounded-2xl flex items-center justify-between shadow-lg shadow-black/10 relative overflow-hidden group ${card.color}`}
             id={card.id}
           >
             {/* Visual shine element */}
             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tr from-white/5 to-transparent rounded-full pointer-events-none group-hover:scale-125 transition-transform duration-500" />
             
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold tracking-widest uppercase opacity-75 font-mono">
-                {card.title}
+            <div className="space-y-0.5 text-left min-w-0">
+              <span className="text-[7.5px] xs:text-[9.5px] sm:text-[10px] font-bold tracking-wider xs:tracking-widest uppercase opacity-75 font-mono block truncate">
+                {card.title.replace('TASK ', '')}
               </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-white tracking-tight">
+              <div className="flex items-baseline gap-1">
+                <span className="text-base xs:text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {card.value}
                 </span>
-                <span className="text-xs font-mono opacity-60">task(s)</span>
+                <span className="text-[8px] sm:text-xs font-mono opacity-60">task</span>
               </div>
-              <p className="text-xs text-slate-400 line-clamp-1">
+              <p className="text-[8px] sm:text-xs text-slate-400 line-clamp-1 hidden xs:block">
                 {card.subtitle}
               </p>
             </div>
 
-            <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/80 group-hover:bg-slate-950 transition-colors">
-              <IconComponent className="w-6 h-6" />
+            <div className="p-1 sm:p-3.5 bg-slate-950/60 rounded sm:rounded-xl border border-slate-800/80 group-hover:bg-slate-950 transition-colors hidden xs:block shrink-0">
+              <IconComponent className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
             </div>
           </motion.div>
         );

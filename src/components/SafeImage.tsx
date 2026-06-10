@@ -35,16 +35,15 @@ export default function SafeImage({ src, alt, className, onError, ...props }: Sa
     const isGoogleDomain = 
       directUrl.includes('drive.google.com') ||
       directUrl.includes('docs.google.com') ||
-      directUrl.includes('googleusercontent.com') ||
-      directUrl.includes('script.google.com');
+      directUrl.includes('googleusercontent.com');
 
-    if (isGoogleDomain) {
+    if (isGoogleDomain && !directUrl.includes('script.google.com')) {
       setDisplaySrc(directUrl);
       setLoading(false);
       return;
     }
 
-    // Wrap external URLs with Google OpenSocial Proxy to bypass CORS, Sandboxes, Referrers, and Redirect constraints
+    // Wrap other external and redirect-heavy script.google.com URLs with Google OpenSocial Proxy to bypass CORS, mobile 302 redirect limits
     const proxiedUrl = `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(directUrl)}`;
     setDisplaySrc(proxiedUrl);
   }, [src]);

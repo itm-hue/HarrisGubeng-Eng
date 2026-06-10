@@ -330,25 +330,25 @@ export default function TaskFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md overflow-y-auto">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col my-8"
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col my-3 sm:my-8"
         id="task_form_modal_container"
       >
         {/* Dynamic header branding */}
-        <div className="p-6 border-b border-slate-800/80 bg-slate-900 flex justify-between items-center bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center border border-orange-500/20">
-              <ClipboardCheck className="w-5 h-5 text-orange-500" />
+        <div className="p-3.5 sm:p-5 border-b border-slate-800/80 bg-slate-900 flex justify-between items-center bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/20">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500/10 rounded-lg sm:rounded-xl flex items-center justify-center border border-orange-500/20 shrink-0">
+              <ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white tracking-wide">
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-base font-extrabold text-white tracking-wide truncate">
                 {taskToEdit ? 'EDIT WORK ORDER TASK' : 'TAMBAH WORK ORDER TASK'}
               </h3>
-              <p className="text-[11px] text-slate-400 font-mono">
+              <p className="text-[9px] sm:text-[11px] text-slate-400 font-mono truncate">
                 {taskToEdit ? `Form ID: ${taskToEdit.id} (${taskToEdit.technician_name})` : `Hotel Harris Gubeng • Operator: ${currentUser.fullname}`}
               </p>
             </div>
@@ -356,50 +356,50 @@ export default function TaskFormModal({
           
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+            className="p-1 sm:p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer shrink-0"
             id="close_form_btn"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Modal Form Scroll Area */}
-        <form onSubmit={handlePreSubmitCheck} className="p-6 space-y-5 overflow-y-auto max-h-[75vh]" id="work_order_form">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <form onSubmit={handlePreSubmitCheck} className="p-3.5 sm:p-6 space-y-3 sm:space-y-5 overflow-y-auto max-h-[82vh] sm:max-h-[75vh]" id="work_order_form">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             {/* Read-Only Date */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Tanggal Operasional (Read-Only)
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
-                  <Clock className="w-4 h-4" />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                  <Clock className="w-3.5 h-3.5" />
                 </span>
                 <input
                   type="date"
                   required
                   readOnly
                   value={date}
-                  className="w-full bg-slate-950/60 border border-slate-800 block text-slate-300 rounded-xl py-2.5 pl-11 pr-4 text-xs font-mono outline-none cursor-not-allowed"
+                  className="w-full bg-slate-950/60 border border-slate-800 block text-slate-400 rounded-lg sm:rounded-xl py-1.5 pl-9 pr-3 sm:py-2 sm:pl-11 sm:pr-4 text-xs font-mono outline-none cursor-not-allowed"
                   id="form_readonly_date"
                 />
               </div>
             </div>
 
             {/* Operational Shift Picker */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Shift Operasional
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5">
                 {(['1', '2', '3'] as const).map((sNum) => (
                   <button
                     type="button"
                     key={sNum}
                     onClick={() => setShift(sNum)}
-                    className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                    className={`py-1.5 sm:py-2 text-[10.5px] sm:text-xs font-bold rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
                       shift === sNum
-                        ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/15'
+                        ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/15 font-extrabold'
                         : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:bg-slate-950 hover:text-slate-300'
                     }`}
                   >
@@ -410,10 +410,10 @@ export default function TaskFormModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             {/* Start Time */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Jam Mulai Kerja
               </label>
               <input
@@ -421,14 +421,14 @@ export default function TaskFormModal({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-xl py-2.5 px-4 text-xs focus:outline-none transition-all"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all"
                 id="form_start_time"
               />
             </div>
 
             {/* End Time */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block font-sans">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block font-sans">
                 Jam Selesai Kerja
               </label>
               <input
@@ -436,23 +436,23 @@ export default function TaskFormModal({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-xl py-2.5 px-4 text-xs focus:outline-none transition-all"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all"
                 id="form_end_time"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             {/* Area Master Dropdown */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Area Harris Hotel
               </label>
               <select
                 required
                 value={areaType}
                 onChange={(e) => setAreaType(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-xl py-2.5 px-4 text-xs focus:outline-none"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
                 id="form_area_type"
               >
                 {areas.map(a => (
@@ -464,15 +464,15 @@ export default function TaskFormModal({
             </div>
 
             {/* Specialty category Dropdown */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Specialty Kategori Kerja
               </label>
               <select
                 required
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-xl py-2.5 px-4 text-xs focus:outline-none"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
                 id="form_specialty"
               >
                 {categories.map(c => (
@@ -484,10 +484,10 @@ export default function TaskFormModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             {/* Area Detail Details Text */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Keterangan Area Spesifik
               </label>
               <input
@@ -495,35 +495,35 @@ export default function TaskFormModal({
                 value={areaDetail}
                 onChange={(e) => setAreaDetail(e.target.value)}
                 placeholder="Cth: Kamar 402, Ubud room, Lift Lobby 1"
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-xl py-2.5 px-4 text-xs focus:outline-none transition-all placeholder:text-slate-600"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all placeholder:text-slate-600"
                 id="form_area_detail"
               />
             </div>
 
             {/* Type Maintenance */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <div className="space-y-1">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Tipe Maintenance Work
               </label>
               <select
                 required
                 value={maintenanceType}
                 onChange={(e) => setMaintenanceType(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-xl py-2.5 px-4 text-xs focus:outline-none"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
                 id="form_maintenance_type"
               >
                 {maintenanceTypes.length > 0 ? (
                   maintenanceTypes.map((mt) => (
-                    <option key={mt.id} value={mt.name}>
+                    <option key={mt.id} value={mt.name} className="bg-slate-950 text-slate-200">
                       {mt.name}
                     </option>
                   ))
                 ) : (
                   <>
-                    <option value="Corrective">Corrective Maintenance</option>
-                    <option value="Preventive">Preventive Maintenance</option>
-                    <option value="Breakdown">Breakdown Maintenance</option>
-                    <option value="Installation">New Installation</option>
+                    <option value="Corrective" className="bg-slate-950 text-slate-200">Corrective Maintenance</option>
+                    <option value="Preventive" className="bg-slate-950 text-slate-200">Preventive Maintenance</option>
+                    <option value="Breakdown" className="bg-slate-950 text-slate-200">Breakdown Maintenance</option>
+                    <option value="Installation" className="bg-slate-950 text-slate-200">New Installation</option>
                   </>
                 )}
               </select>
@@ -531,28 +531,28 @@ export default function TaskFormModal({
           </div>
 
           {/* Details Damage and Resolution Action */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block font-sans">
+          <div className="space-y-1">
+            <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block font-sans">
               Detail Kerusakan & Tindakan Perbaikan (Wajib)
             </label>
             <textarea
               required
-              rows={4}
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Jelaskan secara detail kerusakan yang ditemui, kronologi singkat, serta langkah tindakan perbaikan teknis yang telah diambil..."
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-2xl p-4 text-xs focus:outline-none transition-all placeholder:text-slate-600 leading-relaxed"
+              placeholder="Jelaskan kerusakan dan langkah tindakan perbaikan teknis yang telah diambil..."
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-lg sm:rounded-2xl p-3 sm:p-4 text-xs focus:outline-none transition-all placeholder:text-slate-600 leading-relaxed"
               id="form_description"
             />
           </div>
 
           {/* DRAG AND DROP / CAMERA SNAP AREA */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Foto Dokumentasi Lapangan (Maksimal 3 Foto)
               </label>
-              <span className={`text-[11px] font-mono font-bold ${imageAttachments.length >= 3 ? 'text-red-400' : 'text-slate-500'}`}>
+              <span className={`text-[10px] sm:text-[11px] font-mono font-bold ${imageAttachments.length >= 3 ? 'text-red-400' : 'text-slate-500'}`}>
                 {imageAttachments.length} / 3 Foto
               </span>
             </div>
@@ -563,7 +563,7 @@ export default function TaskFormModal({
               onDragLeave={imageAttachments.length < 3 ? handleDrag : undefined}
               onDrop={imageAttachments.length < 3 ? handleDrop : undefined}
               onClick={clickUploadArea}
-              className={`p-6 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${
+              className={`p-3.5 sm:p-5 border border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all ${
                 imageAttachments.length >= 3
                   ? 'border-red-900/30 bg-red-950/5 cursor-not-allowed text-slate-500'
                   : dragActive
@@ -583,40 +583,37 @@ export default function TaskFormModal({
               />
 
               {imageAttachments.length >= 3 ? (
-                <div className="text-center py-2 flex flex-col items-center space-y-2">
-                  <div className="w-10 h-10 bg-red-950/20 rounded-full flex items-center justify-center text-red-400 border border-red-900/30">
-                    <X className="w-4 h-4" />
+                <div className="text-center py-1 flex flex-col items-center space-y-1">
+                  <div className="w-8 h-8 bg-red-950/20 rounded-full flex items-center justify-center text-red-400 border border-red-900/30">
+                    <X className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-red-400">
+                    <p className="text-[10.5px] font-bold text-red-400">
                       Batas Unggah Maksimal Tercapai
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      Hapus setidaknya satu foto di bawah untuk dapat mengunggah kembali.
+                    <p className="text-[9px] text-slate-500 mt-0.5">
+                      Hapus setidaknya satu foto di bawah untuk mengunggah kembali.
                     </p>
                   </div>
                 </div>
               ) : uploading ? (
-                <div className="flex flex-col items-center py-4 space-y-2">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                  <p className="text-xs font-bold text-orange-500 font-mono">
-                    Memproses & Membaca Objek Gambar...
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    Mohon tunggu sebentar...
+                <div className="flex flex-col items-center py-2 space-y-1">
+                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                  <p className="text-[10px] font-bold text-orange-500 font-mono">
+                    Memproses & mengompresi...
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-2 flex flex-col items-center space-y-2">
-                  <div className="w-12 h-12 bg-slate-900/80 rounded-2xl border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-slate-300">
-                    <Upload className="w-5 h-5 text-orange-500" />
+                <div className="text-center py-1 flex flex-col items-center space-y-1">
+                  <div className="w-9 h-9 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-center text-slate-400">
+                    <Upload className="w-4 h-4 text-orange-500" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-300">
+                    <p className="text-[10.5px] font-bold text-slate-300">
                       Tarik foto ke sini atau <span className="text-orange-500">Telusuri Berkas</span>
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      Mendukung format gambar JPEG, PNG, WEBP, HEIC (Maksimal 3 foto)
+                    <p className="text-[9px] text-slate-500 mt-0.5">
+                      Maksimal 3 foto (JPEG, PNG, WEBP, HEIC)
                     </p>
                   </div>
                 </div>
@@ -625,10 +622,10 @@ export default function TaskFormModal({
 
             {/* Thumbnail preview grid list */}
             {imageAttachments.length > 0 && (
-              <div className="grid grid-cols-3 gap-3 mt-3">
+              <div className="grid grid-cols-3 gap-2.5 mt-2">
                 {imageAttachments.map((item, idx) => (
-                  <div key={idx} className="bg-slate-950/50 p-2 rounded-xl border border-slate-850/60 flex flex-col items-center space-y-1.5 relative group">
-                    <div className="w-full h-16 rounded-lg overflow-hidden bg-black border border-slate-800">
+                  <div key={idx} className="bg-slate-950/50 p-1.5 rounded-lg border border-slate-850/60 flex flex-col items-center space-y-1 relative group">
+                    <div className="w-full h-11 sm:h-16 rounded overflow-hidden bg-black border border-slate-850">
                       <SafeImage
                         src={item.url}
                         alt={`Preview thumbnail ${idx + 1}`}
@@ -636,14 +633,14 @@ export default function TaskFormModal({
                       />
                     </div>
                     <div className="flex justify-between items-center w-full px-1">
-                      <span className="text-[9px] text-slate-500 font-mono">Foto #{idx + 1}</span>
+                      <span className="text-[8px] text-slate-500 font-mono">Foto #{idx + 1}</span>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveImage(idx);
                         }}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold cursor-pointer hover:underline"
+                        className="text-[9.5px] text-red-500 hover:text-red-400 font-bold cursor-pointer"
                       >
                         Hapus
                       </button>
@@ -655,17 +652,17 @@ export default function TaskFormModal({
           </div>
 
           {/* Task Status Toggle Option */}
-          <div className="space-y-1.5 pt-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+          <div className="space-y-1">
+            <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
               Status Pekerjaan (Task Status)
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {(['Pending', 'Complete'] as const).map((tStat) => (
                 <button
                   type="button"
                   key={tStat}
                   onClick={() => setStatus(tStat)}
-                  className={`py-3 px-4 text-xs font-bold rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`py-2 px-3 text-[11px] sm:text-xs font-extrabold rounded-lg sm:rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     status === tStat
                       ? tStat === 'Complete'
                         ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-500/20'
@@ -673,30 +670,30 @@ export default function TaskFormModal({
                       : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-300 hover:bg-slate-950'
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${
+                  <span className={`w-1.5 h-1.5 rounded-full ${
                     tStat === 'Complete' 
                       ? 'bg-emerald-300 animate-pulse' 
                       : 'bg-orange-300 animate-pulse'
                   }`} />
-                  {tStat === 'Complete' ? 'Selesai (Complete)' : 'Pending Perbaikan'}
+                  {tStat === 'Complete' ? 'Selesai' : 'Pending Perbaikan'}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="pt-4 border-t border-slate-800 flex gap-3 justify-end">
+          <div className="pt-3 sm:pt-4 border-t border-slate-800 flex gap-2 sm:gap-3 justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-5 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200 text-xs font-bold rounded-xl cursor-pointer transition-all"
+              className="py-1.5 px-3.5 sm:py-2.5 sm:px-6 bg-slate-955 bg-slate-950 border border-slate-850 hover:bg-slate-850 hover:border-slate-755 text-slate-400 hover:text-white text-xs font-semibold rounded-lg sm:rounded-xl cursor-pointer transition-all duration-100"
             >
               Kembali
             </button>
             <button
               type="submit"
               disabled={uploading}
-              className="py-2.5 px-6 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl cursor-pointer shadow-lg shadow-orange-500/15 flex items-center gap-2 transition-all"
+              className="py-1.5 px-4.5 sm:py-2.5 sm:px-6 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white text-xs font-extrabold rounded-lg sm:rounded-xl cursor-pointer shadow-lg shadow-orange-500/15 flex items-center gap-1.5 transition-all duration-100"
               id="save_task_submit_btn"
             >
               <span>Simpan Tugas</span>

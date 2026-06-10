@@ -16,6 +16,7 @@ export interface User {
   username: string;
   fullname: string;
   role: UserRole;
+  password?: string;
   createdAt: string;
 }
 

@@ -41,9 +41,16 @@ function mapTaskToFrontend(dbTask: any): Task {
   }
 
   // URL Bayangan jika hanya nama file pendek
-  let displayImageUrl = dbTask.image_url || '';
-  if (displayImageUrl && !displayImageUrl.startsWith('http') && !displayImageUrl.startsWith('data:')) {
-    displayImageUrl = `${GOOGLE_APPS_SCRIPT_URL}?file=${displayImageUrl}`;
+  let displayImageUrl = '';
+  if (dbTask.image_url) {
+    displayImageUrl = dbTask.image_url.split(',').map((urlPart: string) => {
+      const trimmedPart = urlPart.trim();
+      if (!trimmedPart) return '';
+      if (trimmedPart.startsWith('http') || trimmedPart.startsWith('data:')) {
+        return trimmedPart;
+      }
+      return `${GOOGLE_APPS_SCRIPT_URL}?file=${trimmedPart}`;
+    }).filter(Boolean).join(', ');
   }
 
   return {
@@ -119,6 +126,7 @@ export const dbService = {
         username: u.username,
         fullname: u.nama_lengkap || u.fullname || '',
         role: u.role === 'Admin' ? 'ADMIN' : (u.role === 'Teknisi' ? 'TEKNISI' : (u.role ? u.role.toUpperCase() : 'TEKNISI')),
+        password: u.password_text || '',
         createdAt: u.created_at || new Date().toISOString()
       })) as User[];
     } catch (e) {
@@ -143,14 +151,23 @@ export const dbService = {
       username: returned.username,
       fullname: returned.nama_lengkap || user.fullname,
       role: returned.role === 'Admin' ? 'ADMIN' : 'TEKNISI',
+      password: returned.password_text || '',
       createdAt: returned.created_at || new Date().toISOString()
     } as User;
   },
 
   async updateUser(user: User): Promise<User> {
     const dbRole = user.role === 'ADMIN' ? 'Admin' : 'Teknisi';
+    const updatePayload: any = { 
+      username: user.username, 
+      nama_lengkap: user.fullname, 
+      role: dbRole 
+    };
+    if (user.password !== undefined) {
+      updatePayload.password_text = user.password;
+    }
     const { error } = await supabase.from('users')
-      .update({ username: user.username, nama_lengkap: user.fullname, role: dbRole })
+      .update(updatePayload)
       .eq('id', user.id);
     if (error) throw error;
     return user;
