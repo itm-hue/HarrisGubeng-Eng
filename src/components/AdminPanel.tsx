@@ -42,13 +42,13 @@ export default function AdminPanel({
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [userFormUsername, setUserFormUsername] = useState('');
   const [userFormFullname, setUserFormFullname] = useState('');
-  const [userFormRole, setUserFormRole] = useState<'TEKNISI' | 'ADMIN'>('TEKNISI');
+  const [userFormRole, setUserFormRole] = useState<'TEKNISI' | 'ADMIN' | 'USER'>('TEKNISI');
   const [userFormPassword, setUserFormPassword] = useState('');
   const [showCreateUser, setShowCreateUser] = useState(false);
 
   // Custom Confirmation Modal states
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [userToEdit, setUserToEdit] = useState<{ id: string; username: string; fullname: string; role: 'TEKNISI' | 'ADMIN'; password?: string } | null>(null);
+  const [userToEdit, setUserToEdit] = useState<{ id: string; username: string; fullname: string; role: 'TEKNISI' | 'ADMIN' | 'USER'; password?: string } | null>(null);
 
   // Area specific States
   const [areaFormName, setAreaFormName] = useState('');
@@ -497,6 +497,7 @@ export default function AdminPanel({
                             >
                               <option value="TEKNISI">TEKNISI (Work Order)</option>
                               <option value="ADMIN">ADMIN (Supervision & PDF)</option>
+                              <option value="USER">USER (Input Work Order Only)</option>
                             </select>
                           </div>
 
@@ -579,6 +580,7 @@ export default function AdminPanel({
                             >
                               <option value="TEKNISI">TEKNISI</option>
                               <option value="ADMIN">ADMIN</option>
+                              <option value="USER">USER</option>
                             </select>
                           </td>
                           <td className="p-4">
@@ -615,9 +617,11 @@ export default function AdminPanel({
                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-mono text-[10px] font-bold ${
                               u.role === 'ADMIN'
                                 ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                                : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                : u.role === 'USER'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                             }`}>
-                              {u.role === 'ADMIN' ? 'ADMINISTRATOR' : 'TEKNISI LAPANGAN'}
+                              {u.role === 'ADMIN' ? 'ADMINISTRATOR' : u.role === 'USER' ? 'USER' : 'TEKNISI LAPANGAN'}
                             </span>
                           </td>
                           <td className="p-4 font-mono text-xs text-left">
@@ -719,6 +723,7 @@ export default function AdminPanel({
                               >
                                 <option value="TEKNISI">TEKNISI</option>
                                 <option value="ADMIN">ADMIN</option>
+                                <option value="USER">USER</option>
                               </select>
                             </div>
                             <div className="space-y-1">
@@ -760,9 +765,11 @@ export default function AdminPanel({
                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full font-mono text-[7.5px] font-bold border shrink-0 ml-2 ${
                             u.role === 'ADMIN'
                               ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                              : u.role === 'USER'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                           }`}>
-                            {u.role === 'ADMIN' ? 'ADMIN' : 'TEKNISI'}
+                            {u.role === 'ADMIN' ? 'ADMIN' : u.role === 'USER' ? 'USER' : 'TEKNISI'}
                           </span>
                         </div>
                         

@@ -60,7 +60,16 @@ export default function TaskTable({
   onApplyFilters,
   loading
 }: TaskTableProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return currentUser?.role?.toUpperCase() === 'USER' ? currentUser.fullname : '';
+  });
+
+  useEffect(() => {
+    if (currentUser?.role?.toUpperCase() === 'USER') {
+      setSearchQuery(currentUser.fullname);
+    }
+  }, [currentUser]);
+
   const [startDate, setStartDate] = useState(() => {
     // Default to today as set in parent App.tsx activeFilters
     return new Date().toISOString().substring(0, 10);
@@ -112,7 +121,8 @@ export default function TaskTable({
 
   const resetFilters = () => {
     const todayStr = new Date().toISOString().substring(0, 10);
-    setSearchQuery('');
+    const defaultSearch = currentUser?.role?.toUpperCase() === 'USER' ? currentUser.fullname : '';
+    setSearchQuery(defaultSearch);
     setStartDate(todayStr);
     setEndDate(todayStr);
     setStatus('All');
@@ -120,7 +130,7 @@ export default function TaskTable({
     setCategory('All');
     setDateWarning(false);
     onApplyFilters({
-      searchQuery: '',
+      searchQuery: defaultSearch,
       startDate: todayStr,
       endDate: todayStr,
       status: 'All',
@@ -184,9 +194,13 @@ export default function TaskTable({
               <input
                 type="text"
                 value={searchQuery}
+                disabled={currentUser?.role?.toUpperCase() === 'USER'}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari Nama Teknisi / Kerusakan..."
-                className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-orange-500 placeholder:text-slate-600 font-sans"
+                className={`w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-orange-500 placeholder:text-slate-600 font-sans transition-all duration-150 ${
+                  currentUser?.role?.toUpperCase() === 'USER' ? 'opacity-55 cursor-not-allowed select-none border-orange-500/20 text-orange-400 font-bold bg-slate-950/80' : ''
+                }`}
+                title={currentUser?.role?.toUpperCase() === 'USER' ? "Pencarian dikunci untuk hanya melihat pekerjaan Anda sendiri" : undefined}
               />
             </div>
             <div className="space-y-1">
@@ -608,9 +622,13 @@ export default function TaskTable({
                     <input
                       type="text"
                       value={searchQuery}
+                      disabled={currentUser?.role?.toUpperCase() === 'USER'}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Nama teknisi / kerusakan..."
-                      className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-2 px-3 text-xs"
+                      className={`w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-2 px-3 text-xs transition-all duration-150 ${
+                        currentUser?.role?.toUpperCase() === 'USER' ? 'opacity-55 cursor-not-allowed select-none border-orange-500/20 text-orange-400 font-bold bg-slate-950/80' : ''
+                      }`}
+                      title={currentUser?.role?.toUpperCase() === 'USER' ? "Pencarian dikunci untuk hanya melihat pekerjaan Anda sendiri" : undefined}
                     />
                   </div>
                   <div className="space-y-1">

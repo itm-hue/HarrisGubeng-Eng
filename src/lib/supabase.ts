@@ -111,6 +111,60 @@ function mapTaskToBackend(task: Partial<Task>): any {
 let cachedAreas: any[] | null = null;
 let cachedCategories: any[] | null = null;
 
+export function mapDbUserToFrontend(u: any): User {
+  if (!u) return {} as User;
+  let rawFullname = u.nama_lengkap || u.fullname || '';
+  let role: 'ADMIN' | 'TEKNISI' | 'USER' = 'TEKNISI';
+  
+  if (rawFullname.endsWith(' [USER]')) {
+    role = 'USER';
+    rawFullname = rawFullname.substring(0, rawFullname.length - 7);
+  } else if (u.role === 'Admin' || u.role === 'ADMIN') {
+    role = 'ADMIN';
+  } else if (u.role === 'User' || u.role === 'USER') {
+    role = 'USER';
+  } else {
+    role = 'TEKNISI';
+  }
+
+  return {
+    id: u.id,
+    username: u.username || '',
+    fullname: rawFullname,
+    role,
+    password: u.password_text || u.password || '',
+    createdAt: u.created_at || u.createdAt || new Date().toISOString()
+  };
+}
+
+export function mapFrontendUserToDb(user: Partial<User> & { password?: string }): {
+  username: string;
+  nama_lengkap: string;
+  role: string;
+  password_text?: string;
+} {
+  const isAdmin = user.role === 'ADMIN';
+  const isUser = user.role === 'USER';
+  const dbRole = isAdmin ? 'Admin' : (isUser ? 'User' : 'Teknisi');
+  
+  let cleanFullname = (user.fullname || '').trim();
+  if (cleanFullname.endsWith(' [USER]')) {
+    cleanFullname = cleanFullname.substring(0, cleanFullname.length - 7);
+  }
+  
+  const payload: any = {
+    username: (user.username || '').trim().toLowerCase(),
+    nama_lengkap: cleanFullname,
+    role: dbRole
+  };
+  
+  if (user.password !== undefined) {
+    payload.password_text = user.password;
+  }
+  
+  return payload;
+}
+
 export const dbService = {
   isMockMode(): boolean { return false; },
   setDbMode(mode: 'MOCK' | 'REAL') {},
@@ -121,14 +175,7 @@ export const dbService = {
     try {
       const { data, error } = await supabase.from('users').select('*').order('nama_lengkap', { ascending: true });
       if (error) throw error;
-      return (data || []).map((u: any) => ({
-        id: u.id,
-        username: u.username,
-        fullname: u.nama_lengkap || u.fullname || '',
-        role: u.role === 'Admin' ? 'ADMIN' : (u.role === 'Teknisi' ? 'TEKNISI' : (u.role ? u.role.toUpperCase() : 'TEKNISI')),
-        password: u.password_text || '',
-        createdAt: u.created_at || new Date().toISOString()
-      })) as User[];
+      return (data || []).map((u: any) => mapDbUserToFrontend(u));
     } catch (e) {
       console.error('getUsers failed:', e);
       return [];
@@ -136,38 +183,19 @@ export const dbService = {
   },
 
   async createUser(user: Omit<User, 'id' | 'createdAt'> & { password?: string }): Promise<User> {
-    const dbRole = user.role === 'ADMIN' ? 'Admin' : 'Teknisi';
+    const dbPayload = mapFrontendUserToDb(user);
     const { data, error } = await supabase.from('users').insert([{
-      username: user.username.trim().toLowerCase(),
-      nama_lengkap: user.fullname.trim(),
-      role: dbRole,
-      password_text: user.password || 'harris123',
+      ...dbPayload,
       created_at: new Date().toISOString()
     }]).select();
     if (error) throw error;
-    const returned = data[0];
-    return {
-      id: returned.id,
-      username: returned.username,
-      fullname: returned.nama_lengkap || user.fullname,
-      role: returned.role === 'Admin' ? 'ADMIN' : 'TEKNISI',
-      password: returned.password_text || '',
-      createdAt: returned.created_at || new Date().toISOString()
-    } as User;
+    return mapDbUserToFrontend(data[0]);
   },
 
   async updateUser(user: User): Promise<User> {
-    const dbRole = user.role === 'ADMIN' ? 'Admin' : 'Teknisi';
-    const updatePayload: any = { 
-      username: user.username, 
-      nama_lengkap: user.fullname, 
-      role: dbRole 
-    };
-    if (user.password !== undefined) {
-      updatePayload.password_text = user.password;
-    }
+    const dbPayload = mapFrontendUserToDb(user);
     const { error } = await supabase.from('users')
-      .update(updatePayload)
+      .update(dbPayload)
       .eq('id', user.id);
     if (error) throw error;
     return user;
@@ -385,11 +413,11 @@ export const dbService = {
   subscribeToUsers(callback: (payload: any) => void) {
     const channel = supabase.channel('users-db-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload: any) => {
-        const mapUser = (u: any) => !u ? {} : {
-          id: u.id, username: u.username, fullname: u.nama_lengkap || '',
-          role: u.role === 'Admin' ? 'ADMIN' : 'TEKNISI', createdAt: u.created_at
-        };
-        callback({ eventType: payload.eventType, new: mapUser(payload.new), old: mapUser(payload.old) });
+        callback({
+          eventType: payload.eventType,
+          new: payload.new ? mapDbUserToFrontend(payload.new) : {},
+          old: payload.old ? mapDbUserToFrontend(payload.old) : {}
+        });
       }).subscribe();
     return { unsubscribe: () => { supabase.removeChannel(channel); } };
   },

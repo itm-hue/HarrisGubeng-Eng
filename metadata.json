@@ -1,5 +1,5 @@
 {
-  "name": "Remix: Hotel Harris Gubeng Task Manager",
+  "name": "Hotel Harris Gubeng Task Manager",
   "description": "A dynamic task management system for Hotel Harris Gubeng technicians and administrators with real-time Supabase sync, Google Drive image uploading, automated PDF generation, and old csv archive uploads.",
   "requestFramePermissions": [],
   "majorCapabilities": [

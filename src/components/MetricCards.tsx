@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Task } from '../types';
+import { Task, UserRole } from '../types';
 import { ClipboardList, CheckCircle2, AlertCircle, TrendingUp, Users, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface MetricCardsProps {
   tasks: Task[];
-  currentUserRole: 'TEKNISI' | 'ADMIN';
+  currentUserRole: UserRole;
 }
 
 export default function MetricCards({ tasks, currentUserRole }: MetricCardsProps) {
@@ -22,7 +22,11 @@ export default function MetricCards({ tasks, currentUserRole }: MetricCardsProps
       id: 'total_logs_metric',
       title: 'TOTAL TASK LOGS',
       value: totalCards,
-      subtitle: currentUserRole === 'TEKNISI' ? 'Semua tugas terdaftar Anda' : 'Seluruh tugas hotel terdaftar',
+      subtitle: currentUserRole === 'USER' 
+        ? 'Tugas terdaftar buatan Anda' 
+        : currentUserRole === 'TEKNISI' 
+          ? 'Semua tugas terdaftar Anda' 
+          : 'Seluruh tugas hotel terdaftar',
       icon: ClipboardList,
       color: 'from-blue-600/10 to-blue-500/5 text-blue-400 border-blue-900/30'
     },

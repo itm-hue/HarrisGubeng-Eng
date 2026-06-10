@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, Task, AreaMaster, CategoryMaster, MaintenanceTypeMaster, TaskFilter, ImageAttachment } from './types';
-import { dbService, isConfigured, supabase } from './lib/supabase';
+import { dbService, isConfigured, supabase, mapDbUserToFrontend } from './lib/supabase';
 import { parseImageUrls } from './lib/imageUtils';
 import Login from './components/Login';
 import MetricCards from './components/MetricCards';
@@ -78,8 +78,12 @@ export default function App() {
     const savedUser = sessionStorage.getItem('harris_logged_user');
     if (savedUser) {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser) as User;
+        setCurrentUser(parsedUser);
         sessionStorage.setItem('last_active_time', Date.now().toString());
+        if (parsedUser.role?.toUpperCase() === 'USER') {
+          setActiveFilters(prev => ({ ...prev, searchQuery: parsedUser.fullname }));
+        }
       } catch (e) {
         sessionStorage.removeItem('harris_logged_user');
       }
@@ -207,13 +211,7 @@ export default function App() {
             
             const mapUser = (u: any): Partial<User> => {
               if (!u) return {};
-              return {
-                id: u.id,
-                username: u.username,
-                fullname: u.nama_lengkap || u.fullname || '',
-                role: u.role === 'Admin' ? 'ADMIN' : (u.role === 'Teknisi' ? 'TEKNISI' : (u.role ? u.role.toUpperCase() : 'TEKNISI')),
-                createdAt: u.created_at || u.createdAt
-              };
+              return mapDbUserToFrontend(u);
             };
 
             const mappedNew = mapUser(payload.new);
@@ -356,6 +354,11 @@ export default function App() {
     sessionStorage.setItem('harris_logged_user', JSON.stringify(user));
     sessionStorage.setItem('last_active_time', Date.now().toString());
     setInactivityNotice('');
+    if (user.role?.toUpperCase() === 'USER') {
+      setActiveFilters(prev => ({ ...prev, searchQuery: user.fullname }));
+    } else {
+      setActiveFilters(prev => ({ ...prev, searchQuery: '' }));
+    }
   };
 
   const handleLogout = () => {
@@ -459,9 +462,13 @@ export default function App() {
               throw new Error('Google Apps Script response was empty.');
             }
           } catch (err: any) {
-            console.error(`Google Drive upload failed for photo #${i+1}, using short file name fallback:`, err);
+            console.error(`Google Drive upload failed for photo #${i+1}, falling back to direct real-time database Base64 storage:`, err);
             driveUploadFailures.push(item.fileName || `TASK_${taskId}`);
-            // Fallback directly to stored short customFileName instead of base64 to ensure CSV purity
+            
+            // Store the actual base64 URL directly in the database so that ALL devices synchronize instantly
+            uploadedUrls.push(item.base64Url);
+            
+            // Also cache locally for extra compatibility
             const extension = item.fileName?.split('.').pop() || 'png';
             const originalNameClean = item.fileName?.split('.')[0]?.replace(/[^a-zA-Z0-9_-]/g, '') || `foto${i + 1}`;
             const indexLabel = `foto${i + 1}`;
@@ -471,11 +478,9 @@ export default function App() {
             } else {
               customFileName = `TASK_${taskId}_${indexLabel}_${originalNameClean}.${extension}`;
             }
-            uploadedUrls.push(customFileName);
-            
-            // Re-cache base64 locally so the visual thumbnail renders perfectly instantly for this user session
             try {
               localStorage.setItem('local_img_' + customFileName, item.base64Url);
+              localStorage.setItem('local_img_' + item.base64Url, item.base64Url);
             } catch (e) {
               console.warn('Storage quota exceeded during fallback upload caching:', e);
             }
@@ -629,6 +634,23 @@ export default function App() {
     setActiveTaskToView(task);
     setIsDetailOpen(true);
   };
+
+  // Dynamically filter lists for USER role to show only their own tasks/metrics
+  const displayedTasks = useMemo(() => {
+    if (currentUser?.role?.toUpperCase() === 'USER') {
+      const userFullnameLower = (currentUser.fullname || '').trim().toLowerCase();
+      return tasks.filter(t => (t.technician_name || '').trim().toLowerCase() === userFullnameLower);
+    }
+    return tasks;
+  }, [tasks, currentUser]);
+
+  const displayedTasksForMetrics = useMemo(() => {
+    if (currentUser?.role?.toUpperCase() === 'USER') {
+      const userFullnameLower = (currentUser.fullname || '').trim().toLowerCase();
+      return allTasksForMetrics.filter(t => (t.technician_name || '').trim().toLowerCase() === userFullnameLower);
+    }
+    return allTasksForMetrics;
+  }, [allTasksForMetrics, currentUser]);
 
   if (!currentUser) {
     return (
@@ -851,11 +873,11 @@ export default function App() {
             </div>
 
             {/* Stats Metrics deck */}
-            <MetricCards tasks={allTasksForMetrics} currentUserRole={currentUser.role} />
+            <MetricCards tasks={displayedTasksForMetrics} currentUserRole={currentUser.role} />
 
             {/* Filterable Data Directory */}
             <TaskTable
-              tasks={tasks}
+              tasks={displayedTasks}
               areas={areas}
               categories={categories}
               currentUser={currentUser}

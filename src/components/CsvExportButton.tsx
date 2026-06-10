@@ -42,7 +42,15 @@ export default function CsvExportButton({ filteredTasks }: CsvExportButtonProps)
 
       filteredTasks.forEach((task, idx) => {
         const timeStr = `${task.start_time || ''} - ${task.end_time || ''} (Shift ${task.shift || '1'})`;
-        const imageUrlsString = parseImageUrls(task.image_url).map(getDirectDriveUrl).join(' ; ');
+        const imageUrlsString = parseImageUrls(task.image_url)
+          .map(url => {
+            const resolved = getDirectDriveUrl(url);
+            if (resolved.startsWith('data:image/') || (resolved.length > 500 && !resolved.includes(' ') && !resolved.includes('http') && !resolved.includes('.'))) {
+              return '[Foto Terkompresi di Database]';
+            }
+            return resolved;
+          })
+          .join(' ; ');
         const row = [
           (idx + 1).toString(),
           task.date || '',

@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { User } from '../types';
-import { supabase } from '../supabase';
+import { supabase, mapDbUserToFrontend } from '../lib/supabase';
 import { ShieldCheck, User as UserIcon, Lock, Hotel } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -66,13 +66,7 @@ export default function Login({ onLoginSuccess, inactivityNotice, onClearNotice 
         }
 
         // Successfully authenticated
-        const loggedUser: User = {
-          id: userRow.id,
-          username: userRow.username,
-          fullname: userRow.nama_lengkap || userRow.fullname || '',
-          role: userRow.role === 'Admin' ? 'ADMIN' : (userRow.role === 'Teknisi' ? 'TEKNISI' : (userRow.role ? userRow.role.toUpperCase() : 'TEKNISI')),
-          createdAt: userRow.created_at || userRow.createdAt || new Date().toISOString()
-        };
+        const loggedUser = mapDbUserToFrontend(userRow);
 
         // Complete transition delay
         setTimeout(() => {

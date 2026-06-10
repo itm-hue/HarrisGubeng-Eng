@@ -70,7 +70,7 @@ export default function TaskFormModal({
       setMaintenanceType(taskToEdit.maintenance_type || 'Corrective');
       setDescription(taskToEdit.description);
       setImageUrl(taskToEdit.image_url || '');
-      setStatus(taskToEdit.status);
+      setStatus(currentUser?.role?.toUpperCase() === 'USER' ? 'Pending' : taskToEdit.status);
 
       const urls = parseImageUrls(taskToEdit.image_url);
       const loadedAttachments = urls.map((url, i) => ({
@@ -110,7 +110,7 @@ export default function TaskFormModal({
       setImageAttachments([]);
       base64CacheRef.current = {};
     }
-  }, [taskToEdit, isOpen, areas, categories, maintenanceTypes]);
+  }, [taskToEdit, isOpen, areas, categories, maintenanceTypes, currentUser]);
 
   if (!isOpen) return null;
 
@@ -649,36 +649,54 @@ export default function TaskFormModal({
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Task Status Toggle Option */}
+          </div>           {/* Task Status Toggle Option */}
           <div className="space-y-1">
-            <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-              Status Pekerjaan (Task Status)
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(['Pending', 'Complete'] as const).map((tStat) => (
-                <button
-                  type="button"
-                  key={tStat}
-                  onClick={() => setStatus(tStat)}
-                  className={`py-2 px-3 text-[11px] sm:text-xs font-extrabold rounded-lg sm:rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    status === tStat
-                      ? tStat === 'Complete'
-                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-500/20'
-                        : 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-500/20'
-                      : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-300 hover:bg-slate-950'
-                  }`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    tStat === 'Complete' 
-                      ? 'bg-emerald-300 animate-pulse' 
-                      : 'bg-orange-300 animate-pulse'
-                  }`} />
-                  {tStat === 'Complete' ? 'Selesai' : 'Pending Perbaikan'}
-                </button>
-              ))}
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Status Pekerjaan (Task Status)
+              </label>
+              {currentUser?.role?.toUpperCase() === 'USER' && (
+                <span className="text-[8.5px] bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.2 rounded font-bold font-mono">LOCKED</span>
+              )}
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(['Pending', 'Complete'] as const).map((tStat) => {
+                const isUserRole = currentUser?.role?.toUpperCase() === 'USER';
+                const isSelected = status === tStat;
+                const isDisabled = isUserRole && tStat === 'Complete';
+                return (
+                  <button
+                    type="button"
+                    key={tStat}
+                    disabled={isUserRole}
+                    onClick={() => {
+                      if (!isUserRole) setStatus(tStat);
+                    }}
+                    className={`py-2 px-3 text-[11px] sm:text-xs font-extrabold rounded-lg sm:rounded-xl border transition-all flex items-center justify-center gap-1.5 ${
+                      isUserRole
+                        ? tStat === 'Pending'
+                          ? 'bg-orange-600/90 border-orange-600/80 text-white shadow-md'
+                          : 'bg-slate-950/20 border-slate-900 text-slate-600 cursor-not-allowed opacity-40'
+                        : isSelected
+                          ? tStat === 'Complete'
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-500/20 cursor-pointer'
+                            : 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-500/20 cursor-pointer'
+                          : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-300 hover:bg-slate-950 cursor-pointer'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      tStat === 'Complete' 
+                        ? 'bg-emerald-300 animate-pulse' 
+                        : 'bg-orange-300 animate-pulse'
+                    }`} />
+                    {tStat === 'Complete' ? 'Selesai' : 'Pending Perbaikan'}
+                  </button>
+                );
+              })}
+            </div>
+            {currentUser?.role?.toUpperCase() === 'USER' && (
+              <p className="text-[9.5px] text-slate-450 italic text-slate-400/80 pt-0.5">Role USER otomatis menginput task baru dengan status &quot;Pending&quot;.</p>
+            )}
           </div>
 
           {/* Action buttons */}
