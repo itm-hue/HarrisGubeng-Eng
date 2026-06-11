@@ -14,7 +14,7 @@ import TaskFormModal from './components/TaskFormModal';
 import TaskDetailsModal from './components/TaskDetailsModal';
 import AdminPanel from './components/AdminPanel';
 import ArchiveHistoryCsv from './components/ArchiveHistoryCsv';
-import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw, Sun, Moon, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const getShortFileNameFromUrl = (url: string): string => {
@@ -84,6 +84,22 @@ export default function App() {
   
   // Navigation tabs for Admin (Dashboard / Master Settings / CSV Archives)
   const [adminTab, setAdminTab] = useState<'DASHBOARD' | 'MASTER_PANEL' | 'CSV_ARCHIVE'>('DASHBOARD');
+
+  // Toggle state for user profile action dropdown (Dark mode, log out, database indicator)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    if (!profileDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('#user_profile_dropdown_container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileDropdownOpen]);
 
   // Load configuration modes on boot
   useEffect(() => {
@@ -711,56 +727,135 @@ export default function App() {
           {/* Database Mode Switcher & User Profile Actions */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0" id="header_profile_actions">
             
-            {/* User credentials banner drawer */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-              <div className="text-right min-w-0 flex flex-col items-end justify-center">
-                <p className="text-[9.5px] sm:text-[11px] font-black text-slate-200 whitespace-normal break-words leading-tight text-right max-w-[110px] xs:max-w-[130px] sm:max-w-[200px]">
-                  {currentUser.fullname}
-                </p>
-                <div className="flex items-center justify-end gap-1 font-mono text-[7.5px] sm:text-[9px] font-bold mt-0.5 leading-none">
-                  <span className={currentUser.role === 'ADMIN' ? 'text-orange-400' : 'text-blue-400'}>
+            {/* Custom dropdown wrapper targeting clicks */}
+            <div className="relative" id="user_profile_dropdown_container">
+              
+              {/* Dropdown Toggle Trigger Button */}
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="group flex items-center gap-2 sm:gap-3 py-1 px-1.5 sm:px-2.5 rounded-xl transition-all hover:bg-slate-800/40 border border-transparent hover:border-slate-800 text-right min-w-0 cursor-pointer select-none"
+                id="user_profile_menu_trigger"
+                title="Buka menu profil"
+              >
+                {/* Username and Role, slightly lowered to look spacious */}
+                <div className="text-right min-w-0 flex flex-col items-end justify-center pt-0.5 sm:pt-1">
+                  <p className="text-[10px] sm:text-xs font-black text-slate-200 whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px] xs:max-w-[135px] sm:max-w-[185px] leading-tight">
+                    {currentUser.fullname}
+                  </p>
+                  <span className={`font-mono text-[7.5px] sm:text-[9px] font-black tracking-widest mt-1.5 leading-none block ${
+                    currentUser.role === 'ADMIN' ? 'text-orange-400' : 'text-blue-400'
+                  }`}>
                     {currentUser.role}
                   </span>
                 </div>
-                
-                {/* S-BASE indicator moved directly under role */}
-                <div 
-                  className="flex items-center gap-0.5 sm:gap-1 px-1 py-0.5 border rounded text-[6.5px] sm:text-[8px] font-extrabold uppercase mt-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 leading-none select-none shrink-0"
-                  title="Database Synchronized with Supabase Cloud"
-                >
-                  <Database className="w-2.2 h-2.2 sm:w-3 sm:h-3 text-emerald-400" />
-                  <span>S-BASE</span>
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+
+                {/* Avatar Icon and Chevron Indicator */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-8 h-8 sm:w-9.5 sm:h-9.5 rounded-lg sm:rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shadow-inner shrink-0 transition-colors duration-200 group-hover:border-orange-500/60 relative">
+                    <UserIcon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-orange-500" />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950" />
+                  </div>
+                  <ChevronDown className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 transition-transform duration-200 shrink-0 ${profileDropdownOpen ? 'rotate-180 text-orange-500' : 'group-hover:text-slate-200'}`} />
                 </div>
-              </div>
+              </button>
 
-              {/* Avatar Icon */}
-              <div className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-lg sm:rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shadow-inner shrink-0">
-                <UserIcon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-orange-500" />
-              </div>
+              {/* Animated Custom Profile Dropdown Menu Card */}
+              <AnimatePresence>
+                {profileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className={`absolute right-0 top-full mt-2.5 w-60 sm:w-64 rounded-xl border p-3.5 z-[100] shadow-2xl ${
+                      theme === 'light'
+                        ? 'bg-white border-slate-200 text-slate-800'
+                        : 'bg-slate-955 border-slate-800 text-slate-100 backdrop-blur-xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950'
+                    }`}
+                    id="user_profile_custom_dropdown"
+                  >
+                    {/* User Identity Banner Header */}
+                    <div className="px-1.5 pb-3 mb-2.5 border-b border-slate-800/10 dark:border-slate-800/60 flex flex-col gap-0.5 select-none text-left">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Petugas Aktif</span>
+                      <span className="text-xs sm:text-sm font-black truncate text-slate-200 dark:text-white">{currentUser.fullname}</span>
+                      <span className={`text-[8.5px] font-bold font-mono uppercase tracking-wider ${
+                        currentUser.role === 'ADMIN' ? 'text-orange-400' : 'text-blue-400'
+                      }`}>
+                        Akses Level: {currentUser.role}
+                      </span>
+                    </div>
 
-              {/* Theme Toggler (Dark/Light mode) */}
-              <button
-                onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-                className="p-1 sm:p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-750 text-orange-500 hover:text-orange-400 rounded-lg sm:rounded-xl transition-all cursor-pointer shrink-0 flex items-center justify-center shadow-md"
-                title={theme === 'dark' ? "Aktifkan Mode Terang (Light Mode)" : "Aktifkan Mode Gelap (Dark Mode)"}
-                id="theme_mode_toggle_header"
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 hover:text-orange-400 transition-transform hover:rotate-45 duration-300" />
-                ) : (
-                  <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 hover:text-orange-500 transition-transform hover:-rotate-12 duration-300" />
+                    <div className="flex flex-col gap-1.5">
+                      {/* Connection Indicator Row */}
+                      <div 
+                        className={`flex items-center justify-between p-2 rounded-lg border select-none text-left ${
+                          theme === 'light'
+                            ? 'bg-slate-50 border-slate-200/60'
+                            : 'bg-slate-900/60 border-slate-850/50'
+                        }`}
+                        title="Web Database tersinkronisasi realtime dengan cloud platform"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Database className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="text-xs font-bold font-sans">Status Database</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[8.5px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 leading-none shrink-0 font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>S-BASE</span>
+                        </div>
+                      </div>
+
+                      {/* Display Mode Toggle Button */}
+                      <button
+                        onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                          theme === 'light'
+                            ? 'bg-slate-50 border-slate-100 hover:bg-slate-100/80 text-slate-800 hover:border-slate-200'
+                            : 'bg-slate-900/60 border-slate-850/50 hover:bg-slate-800/80 text-slate-200 hover:border-slate-700'
+                        }`}
+                        id="theme_dropdown_toggle"
+                      >
+                        <div className="flex items-center gap-2">
+                          {theme === 'dark' ? (
+                            <Sun className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                          ) : (
+                            <Moon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                          )}
+                          <span className="text-xs font-bold font-sans">
+                            {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+                          </span>
+                        </div>
+                        
+                        {/* Custom switch indicator */}
+                        <div className={`relative w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${
+                          theme === 'light' ? 'bg-orange-500' : 'bg-slate-700'
+                        }`}>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${
+                            theme === 'light' ? 'translate-x-3.5' : 'translate-x-0'
+                          }`} />
+                        </div>
+                      </button>
+
+                      {/* Keluar Akun (Logout) Action Button */}
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className={`w-full flex items-center gap-2.5 p-2 rounded-lg border text-left transition-all text-red-500 cursor-pointer ${
+                          theme === 'light'
+                            ? 'bg-red-50/50 border-red-100 hover:bg-red-50 hover:border-red-200'
+                            : 'bg-slate-900/60 border-slate-850/50 hover:bg-red-500/10 hover:border-red-500/25'
+                        }`}
+                      >
+                        <LogOut className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                        <span className="text-xs font-bold font-sans">Keluar Akun</span>
+                      </button>
+                    </div>
+                  </motion.div>
                 )}
-              </button>
+              </AnimatePresence>
 
-              {/* Log out trigger */}
-              <button
-                onClick={handleLogout}
-                className="p-1 sm:p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-750 rounded-lg sm:rounded-xl text-slate-500 hover:text-red-400 transition-colors cursor-pointer shrink-0"
-                title="Keluar Akun"
-              >
-                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
             </div>
           </div>
         </div>
