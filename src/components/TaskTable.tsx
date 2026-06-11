@@ -675,6 +675,18 @@ export default function TaskTable({
                       ))}
                     </select>
                   </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Status</label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 text-slate-300 rounded-xl py-2 px-3 text-xs"
+                    >
+                      <option value="All">Semua Status</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Complete">Selesai</option>
+                    </select>
+                  </div>
                   <button
                     type="submit"
                     className="w-full bg-orange-500 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 mt-4 cursor-pointer"
