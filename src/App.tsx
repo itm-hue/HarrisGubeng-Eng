@@ -709,17 +709,17 @@ export default function App() {
           {/* Brand Identity / Hotel Harris custom logo */}
           <div className="flex flex-col items-center justify-center select-none shrink-0" id="header_brand_logo_panel">
             <div className="flex flex-col items-center justify-center leading-none">
-              <span className="harris-logo-text text-[26px] sm:text-[32px] font-[950] tracking-wide uppercase font-sans leading-none block select-none">
+              <span className="harris-logo-text text-[19px] sm:text-[28px] font-[950] tracking-wide uppercase font-sans leading-none block select-none">
                 HARRIS
               </span>
               <span 
-                className="gubeng-logo-text text-[15px] sm:text-[18px] font-[800] uppercase font-sans leading-none block select-none mt-0.5"
+                className="gubeng-logo-text text-[11px] sm:text-[16px] font-[800] uppercase font-sans leading-none block select-none mt-0.5"
                 style={{ letterSpacing: '0.24em', marginRight: '-0.24em' }}
               >
                 GUBENG
               </span>
             </div>
-            <p className="text-[9.5px] sm:text-[11px] harris-logo-sub font-bold font-mono tracking-wider text-center uppercase leading-none mt-1.5 select-none">
+            <p className="text-[7.5px] sm:text-[10px] harris-logo-sub font-bold font-mono tracking-wider text-center uppercase leading-none mt-1 sm:mt-1.5 select-none">
               Work Order Task Operations
             </p>
           </div>
