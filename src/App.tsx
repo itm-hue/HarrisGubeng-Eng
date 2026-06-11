@@ -14,7 +14,7 @@ import TaskFormModal from './components/TaskFormModal';
 import TaskDetailsModal from './components/TaskDetailsModal';
 import AdminPanel from './components/AdminPanel';
 import ArchiveHistoryCsv from './components/ArchiveHistoryCsv';
-import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw } from 'lucide-react';
+import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const getShortFileNameFromUrl = (url: string): string => {
@@ -35,6 +35,22 @@ const getShortFileNameFromUrl = (url: string): string => {
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [inactivityNotice, setInactivityNotice] = useState<string>('');
+  
+  // Theme toggler state (defaults to dark mode)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('harris_theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('harris_theme', theme);
+    const root = window.document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+  }, [theme]);
   
   // Master lists
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -663,31 +679,33 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07111e] bg-gradient-to-tr from-[#050c15] via-[#091629] to-[#040910] text-slate-100 font-sans pb-16 antialiased" id="main_app_wrapper">
+    <div className={`min-h-screen font-sans pb-16 antialiased transition-colors duration-300 ${
+      theme === 'light' 
+        ? 'bg-slate-50 text-slate-800' 
+        : 'bg-[#07111e] bg-gradient-to-tr from-[#050c15] via-[#091629] to-[#040910] text-slate-100'
+    }`} id="main_app_wrapper">
       {/* -----------------------------------------------------------------------
           MAIN HEADER STYLED UTILITY RAILS
           ----------------------------------------------------------------------- */}
       <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 shadow" id="main_navigation_header">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex items-center justify-between gap-2">
           
-          {/* Brand Identity / Hotel Harris logo placeholder */}
-          <div className="flex items-center gap-2 sm:gap-3 text-left">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md shadow-orange-500/10 shrink-0">
-              <Hotel className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 text-white" />
+          {/* Brand Identity / Hotel Harris custom logo */}
+          <div className="flex flex-col items-center justify-center select-none shrink-0" id="header_brand_logo_panel">
+            <div className="flex flex-col items-center justify-center leading-none">
+              <span className="harris-logo-text text-[26px] sm:text-[32px] font-[950] tracking-wide uppercase font-sans leading-none block select-none">
+                HARRIS
+              </span>
+              <span 
+                className="gubeng-logo-text text-[15px] sm:text-[18px] font-[800] uppercase font-sans leading-none block select-none mt-0.5"
+                style={{ letterSpacing: '0.24em', marginRight: '-0.24em' }}
+              >
+                GUBENG
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
-                <h1 className="text-xs sm:text-sm font-black tracking-tight text-white uppercase sm:text-base font-sans">
-                  HARRIS <span className="text-orange-500">GUBENG</span>
-                </h1>
-                <span className="text-[8px] sm:text-[9px] bg-orange-500/15 text-orange-400 font-semibold px-1 sm:px-1.5 py-0.5 rounded font-mono">
-                  SBY
-                </span>
-              </div>
-              <p className="text-[8px] sm:text-[10px] text-slate-400 font-mono tracking-wider mt-0.5 uppercase">
-                Work Order Task Operations
-              </p>
-            </div>
+            <p className="text-[9.5px] sm:text-[11px] harris-logo-sub font-bold font-mono tracking-wider text-center uppercase leading-none mt-1.5 select-none">
+              Work Order Task Operations
+            </p>
           </div>
 
           {/* Database Mode Switcher & User Profile Actions */}
@@ -720,6 +738,20 @@ export default function App() {
               <div className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-lg sm:rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shadow-inner shrink-0">
                 <UserIcon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-orange-500" />
               </div>
+
+              {/* Theme Toggler (Dark/Light mode) */}
+              <button
+                onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                className="p-1 sm:p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 hover:border-slate-750 text-orange-500 hover:text-orange-400 rounded-lg sm:rounded-xl transition-all cursor-pointer shrink-0 flex items-center justify-center shadow-md"
+                title={theme === 'dark' ? "Aktifkan Mode Terang (Light Mode)" : "Aktifkan Mode Gelap (Dark Mode)"}
+                id="theme_mode_toggle_header"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 hover:text-orange-400 transition-transform hover:rotate-45 duration-300" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 hover:text-orange-500 transition-transform hover:-rotate-12 duration-300" />
+                )}
+              </button>
 
               {/* Log out trigger */}
               <button

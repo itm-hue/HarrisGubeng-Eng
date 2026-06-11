@@ -582,14 +582,14 @@ export default function TaskTable({
                     onClick={() => setPage((p) => Math.max(p - 1, 1))}
                     className="p-1 px-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-bold text-slate-400 disabled:opacity-30 cursor-pointer"
                   >
-                    Mundur
+                    BACK
                   </button>
                   <button
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                     className="p-1 px-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-bold text-slate-400 disabled:opacity-30 cursor-pointer"
                   >
-                    Maju
+                    NEXT
                   </button>
                 </div>
               </div>

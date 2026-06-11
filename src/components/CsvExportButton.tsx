@@ -96,17 +96,17 @@ export default function CsvExportButton({ filteredTasks }: CsvExportButtonProps)
       onClick={generateCsv}
       disabled={exporting}
       id="export_csv_button"
-      className="flex items-center gap-1 bg-[#0F1E36] hover:bg-[#183054] text-white hover:text-orange-400 active:bg-slate-950 px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl border border-slate-800 text-[10px] sm:text-sm font-semibold cursor-pointer transition-all disabled:opacity-65"
+      className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-emerald-700 text-[9px] sm:text-xs font-bold cursor-pointer transition-all disabled:opacity-65 active:scale-95 shadow-sm"
     >
       {exporting ? (
         <>
-          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin text-orange-500" />
-          <span className="text-[9px] sm:text-sm">CSV...</span>
+          <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin text-white" />
+          <span className="text-[8.5px] sm:text-xs">CSV...</span>
         </>
       ) : (
         <>
-          <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
-          <span>Export CSV</span>
+          <FileSpreadsheet className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+          <span>EXPORT CSV</span>
         </>
       )}
     </button>

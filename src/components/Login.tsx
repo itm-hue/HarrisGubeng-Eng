@@ -99,18 +99,22 @@ export default function Login({ onLoginSuccess, inactivityNotice, onClearNotice 
         <div className="p-8 text-center bg-gradient-to-b from-slate-900 to-slate-950/80 relative border-b border-slate-800">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-orange-500 rounded-full" />
           
-          <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 bg-gradient-to-tr from-orange-500 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-              <Hotel className="w-7 h-7 text-white" id="hotel_icon" />
+          <div className="flex flex-col items-center justify-center select-none py-1 text-center">
+            <div className="flex flex-col items-center justify-center leading-none">
+              <span className="harris-logo-text text-[36px] sm:text-[44px] font-[950] tracking-wide uppercase font-sans leading-none block select-none">
+                HARRIS
+              </span>
+              <span 
+                className="gubeng-logo-text text-[20px] sm:text-[24px] font-[800] uppercase font-sans leading-none block select-none mt-1"
+                style={{ letterSpacing: '0.24em', marginRight: '-0.24em' }}
+              >
+                GUBENG
+              </span>
             </div>
+            <p className="text-[11px] sm:text-sm harris-logo-sub font-bold uppercase tracking-widest font-mono mt-3.5 text-center select-none">
+              Work Order Task Operations
+            </p>
           </div>
-          
-          <h2 className="text-2xl font-bold tracking-tight text-white mb-1 font-sans">
-            HARRIS <span className="text-orange-500">GUBENG</span>
-          </h2>
-          <p className="text-xs text-slate-400 uppercase tracking-widest font-mono">
-            Task Management Systems
-          </p>
         </div>
 
         {/* Content Form Body */}
