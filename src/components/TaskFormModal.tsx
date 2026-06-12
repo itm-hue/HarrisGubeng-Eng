@@ -52,6 +52,7 @@ export default function TaskFormModal({
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   // Cache to store heavy Base64 image strings off React state to prevent slow render and hangs
   const base64CacheRef = useRef<Record<string, string>>({});
@@ -245,15 +246,39 @@ export default function TaskFormModal({
     e.preventDefault();
     if (imageAttachments.length >= 3) {
       alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
+      e.target.value = '';
       return;
     }
 
     if (e.target.files && e.target.files[0]) {
       await processFile(e.target.files[0]);
     }
+    
+    // Reset file input value so same file/photo can be triggered/uploaded again if needed
+    e.target.value = '';
   };
 
-  const clickUploadArea = () => {
+  const clickCameraArea = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (imageAttachments.length >= 3) {
+      alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
+      return;
+    }
+    cameraInputRef.current?.click();
+  };
+
+  const clickGalleryArea = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (imageAttachments.length >= 3) {
+      alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const clickUploadArea = (e: React.MouseEvent) => {
+    // If the general card area is clicked, we default to opening the gallery selector
+    // unless specific buttons inside are clicked.
     if (imageAttachments.length >= 3) {
       alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
       return;
@@ -572,6 +597,7 @@ export default function TaskFormModal({
               }`}
               id="upload_drop_zone"
             >
+              {/* Hidden file input for Photo Gallery */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -579,6 +605,18 @@ export default function TaskFormModal({
                 accept="image/*"
                 className="hidden"
                 id="form_file_selector"
+                disabled={imageAttachments.length >= 3}
+              />
+
+              {/* Hidden file input for Direct Camera (with capture="environment" for live photo option on all phones) */}
+              <input
+                type="file"
+                ref={cameraInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                id="form_camera_selector"
                 disabled={imageAttachments.length >= 3}
               />
 
@@ -604,17 +642,35 @@ export default function TaskFormModal({
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-1 flex flex-col items-center space-y-1">
-                  <div className="w-9 h-9 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-center text-slate-400">
-                    <Upload className="w-4 h-4 text-orange-500" />
+                <div className="text-center py-1.5 flex flex-col items-center space-y-3 w-full">
+                  <div className="text-center select-none">
+                    <p className="text-[10.5px] font-black text-slate-200 uppercase tracking-wider font-sans">
+                      Metode Unggah Foto Dokumentasi
+                    </p>
+                    <p className="text-[9.5px] text-slate-500 mt-1 font-sans">
+                      Pilihan opsi langsung untuk semua ponsel:
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-[10.5px] font-bold text-slate-300">
-                      Tarik foto ke sini atau <span className="text-orange-500">Telusuri Berkas</span>
-                    </p>
-                    <p className="text-[9px] text-slate-500 mt-0.5">
-                      Maksimal 3 foto (JPEG, PNG, WEBP, HEIC)
-                    </p>
+                  
+                  {/* Two distinct high-contrast tactile action buttons side-by-side */}
+                  <div className="flex flex-col xs:flex-row items-center gap-2.5 w-full max-w-md justify-center px-2">
+                    <button
+                      type="button"
+                      onClick={clickCameraArea}
+                      className="w-full xs:w-auto flex-1 py-1.5 sm:py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 hover:text-orange-400 text-orange-500 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/5 transition-all cursor-pointer min-h-[44px] select-none"
+                    >
+                      <Camera className="w-4 h-4 text-orange-500" />
+                      <span>AMBIL FOTO (KAMERA)</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={clickGalleryArea}
+                      className="w-full xs:w-auto flex-1 py-1.5 sm:py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 hover:text-white text-slate-300 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer min-h-[44px] select-none"
+                    >
+                      <Upload className="w-4 h-4 text-emerald-400" />
+                      <span>BUKA GALERI FOTO</span>
+                    </button>
                   </div>
                 </div>
               )}
