@@ -1,0 +1,615 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;850&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* -------------------------------------------------------------------------
+   LIGHT MODE OVERRIDES FOR HARRIS WORK ORDER
+   ------------------------------------------------------------------------- */
+html.light body,
+html.light #main_app_wrapper {
+  background-color: #fcfbfa !important;
+  background-image: radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.06) 0, transparent 40%),
+                    radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.04) 0, transparent 40%),
+                    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.02) 0, transparent 40%) !important;
+  color: #1e293b !important;
+}
+
+/* Header style and inner items with absolute gloss and orange top-rail */
+html.light #main_navigation_header {
+  background-color: #EBF1FA !important; /* Premium light ice-blue/grey that compliments the navy logo logo */
+  border-bottom: 2px solid #cbd5e1 !important;
+  box-shadow: 0 4px 20px -5px rgba(0, 32, 91, 0.08) !important;
+}
+
+/* Custom logo-specific color preservation rules (Dark Mode is default) */
+.harris-logo-text {
+  color: #ffffff !important;
+}
+.gubeng-logo-text {
+  color: #ffffff !important;
+}
+.harris-logo-sub {
+  color: #ffffff !important; /* pure white in default dark mode */
+}
+
+/* Light mode overrides (when html has class 'light') */
+html.light .harris-logo-text {
+  color: #00205B !important; /* elegant Hotel Harris deep navy */
+}
+html.light .gubeng-logo-text {
+  color: #00205B !important;
+}
+html.light .harris-logo-sub {
+  color: #64748b !important; /* elegant slate grey in light mode */
+}
+
+html.light #main_navigation_header h1 {
+  color: #0f172a !important;
+}
+
+html.light #main_navigation_header p {
+  color: #475569 !important;
+}
+
+html.light #main_navigation_header span.bg-orange-500\/15 {
+  background-color: #ffebd8 !important;
+  color: #ea580c !important;
+  border: 1px solid #fed7aa !important;
+}
+
+html.light #header_profile_actions p {
+  color: #1e293b !important;
+}
+
+html.light #header_profile_actions .text-slate-200 {
+  color: #0f172a !important;
+}
+
+html.light #header_profile_actions .bg-slate-950,
+html.light #header_profile_actions button,
+html.light #header_profile_actions div.w-7\.5 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html.light #header_profile_actions .text-slate-400 {
+  color: #475569 !important;
+}
+
+/* Theme Mode Toggle Button Styling inside Header */
+html.light #theme_mode_toggle_header {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #ea580c !important;
+}
+html.light #theme_mode_toggle_header:hover {
+  background-color: #e2e8f0 !important;
+  color: #c2410c !important;
+}
+
+/* Premium Dashboard Metrics Panel Cards styling overrides */
+html.light #total_logs_metric {
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%) !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.08) !important;
+}
+html.light #total_logs_metric span {
+  color: #1e3a8a !important;
+}
+html.light #total_logs_metric p {
+  color: #2563eb !important;
+}
+html.light #total_logs_metric div.p-1 {
+  background-color: #dbeafe !important;
+  border-color: #93c5fd !important;
+  color: #2563eb !important;
+}
+
+html.light #complete_logs_metric {
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%) !important;
+  border-color: #a7f3d0 !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08) !important;
+}
+html.light #complete_logs_metric span {
+  color: #064e3b !important;
+}
+html.light #complete_logs_metric p {
+  color: #059669 !important;
+}
+html.light #complete_logs_metric div.p-1 {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #059669 !important;
+}
+
+html.light #pending_logs_metric {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%) !important;
+  border-color: #ffedd5 !important;
+  box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.08) !important;
+}
+html.light #pending_logs_metric span {
+  color: #7c2d12 !important;
+}
+html.light #pending_logs_metric p {
+  color: #ea580c !important;
+}
+html.light #pending_logs_metric div.p-1 {
+  background-color: #ffedd5 !important;
+  border-color: #fdba74 !important;
+  color: #ea580c !important;
+}
+
+/* Base Cards Containers (Filters panel, sub-panels & tables wrapper) */
+html.light .bg-slate-900,
+html.light #desktop_filters_deck,
+html.light #tasks_riwayat_directory .bg-slate-900,
+html.light #admin_main_tab_deck + div .bg-slate-900,
+html.light #users_board_table,
+html.light #areas_board,
+html.light #categories_board,
+html.light #types_board,
+html.light #csv_records_board {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.04) !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-800\/60,
+html.light .border-slate-850\/60,
+html.light .border-slate-850,
+html.light .divide-slate-850\/60 > * {
+  border-color: #e2e8f0 !important;
+}
+
+/* Sophisticated Typography & Label Controls */
+html.light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400,
+html.light label {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+html.light .text-slate-450 {
+  color: #57534e !important;
+}
+
+html.light .text-slate-500,
+html.light .text-slate-600 {
+  color: #64748b !important;
+}
+
+html.light h2, 
+html.light h3, 
+html.light h4,
+html.light .text-white {
+  color: #0f172a !important;
+}
+
+/* Beautiful form fields, inputs, dropdown selection fields & date fields */
+html.light input[type="text"],
+html.light input[type="date"],
+html.light input[type="password"],
+html.light input[type="number"],
+html.light textarea,
+html.light select,
+html.light .bg-slate-950\/50,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-900\/55,
+html.light .bg-slate-900\/40,
+html.light .bg-slate-900\/20,
+html.light .bg-slate-950 {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Select element options inside dropdown menu items */
+html.light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Absolute premium Harris Brand Focus ring overlay styles */
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: #f97316 !important;
+  outline: none !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3.5px rgba(249, 115, 22, 0.16) !important;
+}
+
+/* Disabled styling matching and locked search block inputs */
+html.light input:disabled {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #64748b !important;
+  opacity: 0.75 !important;
+}
+
+/* High contrast placeholder styling */
+html.light ::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Alert warnings block customization */
+html.light .bg-amber-500\/5 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #b45309 !important;
+}
+
+html.light .text-amber-500 {
+  color: #b45309 !important;
+}
+
+/* Real status database connector indicator badge style */
+html.light .bg-emerald-500\/10 {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html.light .text-emerald-400 {
+  color: #047857 !important;
+}
+
+/* Table container details & beautiful formatting layout mapping */
+html.light .bg-slate-950\/20 {
+  background-color: #fafbfc !important;
+}
+
+html.light table {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+}
+
+html.light table thead tr.bg-slate-950 {
+  background-color: #f1f5f9 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+html.light table thead th {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.7rem !important;
+}
+
+html.light table tbody tr {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html.light table tbody tr:hover {
+  background-color: rgba(241, 245, 249, 0.7) !important;
+}
+
+html.light table tbody td {
+  color: #1e293b !important;
+}
+
+/* Row Action Buttons styled inside light mode with high contrast action states */
+html.light button.text-blue-400 {
+  color: #2563eb !important;
+}
+html.light button.text-blue-400:hover {
+  color: #1d4ed8 !important;
+  background-color: #eff6ff !important;
+}
+html.light button.text-amber-400 {
+  color: #d97706 !important;
+}
+html.light button.text-amber-400:hover {
+  color: #b45309 !important;
+  background-color: #fff7ed !important;
+}
+html.light button.text-red-400 {
+  color: #dc2626 !important;
+}
+html.light button.text-red-400:hover {
+  color: #b91c1c !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Modals overlays & container dialog boxes */
+html.light .bg-slate-950\/80 {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+html.light .bg-[#0a1424],
+html.light .bg-slate-900\/95,
+html.light .bg-slate-900\/90 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15) !important;
+}
+
+html.light div[id^="modal_"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Work Order list/item specific styling of pending/progress cards */
+html.light div.border-slate-800\/40 {
+  border-color: #e2e8f0 !important;
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-slate-950\/40 {
+  background-color: rgba(241, 245, 249, 0.7) !important;
+}
+
+/* Active admin navigation subtabs and control switches */
+html.light .bg-slate-950 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light #admin_main_tab_deck button {
+  color: #475569 !important;
+}
+
+html.light #admin_main_tab_deck button:hover {
+  color: #0f172a !important;
+}
+
+html.light #admin_main_tab_deck button.border-orange-500 {
+  border-bottom-color: #ea580c !important;
+  color: #0f172a !important;
+  background-color: rgba(241, 245, 249, 0.8) !important;
+}
+
+/* Orange badges to be safe and crisp */
+html.light .text-orange-400 {
+  color: #ea580c !important;
+}
+
+html.light .bg-orange-500\/10 {
+  background-color: #fff7ed !important;
+  border: 1px solid #ffedd5 !important;
+  color: #ea580c !important;
+}
+
+/* Status specific tags built with beautiful rich hues and solid light-tint weights */
+html.light .bg-amber-500\/10 {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+html.light .bg-blue-500\/10 {
+  background-color: #dbeafe !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+html.light .bg-emerald-500\/10 {
+  background-color: #d1fae5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+/* Pagination panel and buttons with beautiful click states */
+html.light button.bg-[#0d1b2e],
+html.light button.bg-slate-800\/50 {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+html.light button.bg-[#0d1b2e]:hover:not(:disabled),
+html.light button.bg-slate-800\/50:hover:not(:disabled) {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+html.light button.bg-[#0d1b2e]:disabled,
+html.light button.bg-slate-800\/50:disabled {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #cbd5e1 !important;
+}
+
+/* Login Panel Adaptability - beautiful high contrast forms */
+html.light .bg-slate-900\/80 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+html.light div.min-h-screen.flex.items-center.justify-center {
+  background-color: #fcfbfa !important;
+  background-image: radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.08) 0, transparent 40%),
+                    radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0, transparent 40%) !important;
+}
+html.light #login_card_container {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 25px 70px -10px rgba(15, 23, 42, 0.1) !important;
+}
+html.light #login_card_container div.p-8.text-center {
+  background: linear-gradient(to bottom, #ffffff, #fafaf9) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+html.light #login_card_container p.text-slate-400 {
+  color: #475569 !important;
+}
+html.light #login_form label {
+  color: #475569 !important;
+}
+html.light #login_error_banner {
+  background-color: #fef2f2 !important;
+  border-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* Scrollbar tweaks */
+html.light ::-webkit-scrollbar-track {
+  background-color: #f8fafc !important;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8 !important;
+}
+
+/* -------------------------------------------------------------------------
+   RESPONSIVE DESIGN HARMONY OVERRIDES (PC, MOBILE & TABLET LIGHT MODE)
+   ------------------------------------------------------------------------- */
+
+/* Mobile & Tablet Card List Wrap Overrides */
+html.light #mobile_tasks_list > div {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+  border-radius: 1rem !important;
+}
+
+/* Hardcoded specialty tags and sub-badge cards in light-mode list views */
+html.light .bg-\[\#091526\]\/40 {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Mobile task items footer panel override */
+html.light .bg-\[\#0d1624\]\/20 {
+  background-color: #fcfbfa !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Mobile search header buttons overrides */
+html.light .bg-\[\#0F1E36\] {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #ea580c !important;
+}
+html.light .bg-\[\#0F1E36\]:hover {
+  background-color: #e2e8f0 !important;
+  color: #c2410c !important;
+}
+
+/* Direct mobile Filter/Search sidebar background overlay and drawer */
+html.light div.fixed.inset-0.z-50.lg\:hidden {
+  background-color: rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+html.light div.fixed.inset-0.z-50.lg\:hidden > div {
+  background-color: #ffffff !important;
+  border-left: 1px solid #e2e8f0 !important;
+  box-shadow: -10px 0 30px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light div.fixed.inset-0.z-50.lg\:hidden h3 {
+  color: #0f172a !important;
+}
+
+html.light div.fixed.inset-0.z-50.lg\:hidden label {
+  color: #475569 !important;
+}
+
+/* Premium Modal Containers overrides (Task Add/Edit and Details modals) */
+html.light #task_form_modal_container,
+html.light #task_detail_modal_container {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.18) !important;
+  border-radius: 1.5rem !important;
+}
+
+/* Premium modal background gradient header overlays */
+html.light #task_form_modal_container > div.border-b,
+html.light #task_detail_modal_container > div.border-b {
+  background: #ffffff !important;
+  background-image: linear-gradient(to right, #ffd7b018, #fcfbfa) !important;
+  border-bottom: 2px solid #f1f5f9 !important;
+}
+
+/* High contrast modal close triggers */
+html.light #close_form_btn,
+html.light #close_detail_btn {
+  color: #64748b !important;
+}
+html.light #close_form_btn:hover,
+html.light #close_detail_btn:hover {
+  background-color: #f1f5f9 !important;
+  color: #ef4444 !important;
+}
+
+/* Detail modal chronology timeline trace element */
+html.light .border-l-2.border-slate-800 {
+  border-left-color: #e2e8f0 !important;
+}
+
+/* Timeline chronology list container inner paper membranes */
+html.light div.p-3.bg-slate-950\/60 {
+  background-color: #fafbfc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Timeline chronology bullet points inside light mode */
+html.light span.absolute.-left-\[27px\] {
+  background-color: #ffffff !important;
+  border-color: #ea580c !important;
+}
+
+/* Details modal close action button */
+html.light #close_details_footer_btn {
+  background-color: #ea580c !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+html.light #close_details_footer_btn:hover {
+  background-color: #c2410c !important;
+}
+
+/* General button state overrides for light mode */
+html.light button.bg-slate-950 {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+html.light button.bg-slate-950:hover:not(:disabled) {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Subtle border indicator tags */
+html.light .border-slate-850,
+html.light .border-slate-855,
+html.light .border-slate-805 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Ensure no persistent dark text remains in user log states */
+html.light .text-slate-200,
+html.light .text-slate-300 {
+  color: #1e293b !important;
+}
+
+
