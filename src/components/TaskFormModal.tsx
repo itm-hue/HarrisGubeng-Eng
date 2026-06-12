@@ -57,6 +57,82 @@ export default function TaskFormModal({
   // Cache to store heavy Base64 image strings off React state to prevent slow render and hangs
   const base64CacheRef = useRef<Record<string, string>>({});
 
+  // Real WebRTC Live Camera configuration states & refs
+  const [isLiveCameraOpen, setIsLiveCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const startCamera = async (facing: 'environment' | 'user' = 'environment') => {
+    setCameraLoading(true);
+    setCameraError(null);
+    
+    // Stop any existing stream before request
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => {
+        try { track.stop(); } catch(e) {}
+      });
+      setCameraStream(null);
+    }
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: 1024 },
+          height: { ideal: 768 }
+        },
+        audio: false
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      console.error("Camera access error:", err);
+      setCameraError(
+        "Gagal mengakses Kamera Live secara langsung. Silakan berikan izin akses kamera pada browser Anda, atau gunakan file input fallback."
+      );
+    } finally {
+      setCameraLoading(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => {
+        try { track.stop(); } catch(e) {}
+      });
+      setCameraStream(null);
+    }
+    setIsLiveCameraOpen(false);
+  };
+
+  // Sync stream lifecycle with open/close state
+  useEffect(() => {
+    if (isLiveCameraOpen) {
+      startCamera(cameraFacingMode);
+    } else {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => {
+          try { track.stop(); } catch(e) {}
+        });
+        setCameraStream(null);
+      }
+    }
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => {
+          try { track.stop(); } catch(e) {}
+        });
+      }
+    };
+  }, [isLiveCameraOpen, cameraFacingMode]);
+
   // Prefill dates or edit item
   useEffect(() => {
     if (taskToEdit) {
@@ -264,7 +340,63 @@ export default function TaskFormModal({
       alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
       return;
     }
-    cameraInputRef.current?.click();
+    // Directly target the capture-enabled native camera input for flawless compatibility on all brands (Vivo, OPPO, iOS, Samsung)
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+  };
+
+  const capturePhoto = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+
+    try {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      
+      // Get the true video layout parameters
+      const width = video.videoWidth || 1024;
+      const height = video.videoHeight || 768;
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      // Draw live video frame beautifully onto canvas
+      ctx.drawImage(video, 0, 0, width, height);
+      
+      // Compress frame directly to JPEG Blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          const timestamp = new Date().getTime();
+          const file = new File([blob], `Kamera_LiveTask_${timestamp}.jpg`, { type: 'image/jpeg' });
+          await processFile(file);
+          stopCamera();
+        } else {
+          // Robust fallback base64
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.70);
+          const timestamp = new Date().getTime();
+          const objectUrl = URL.createObjectURL(new Blob([], { type: 'image/jpeg' }));
+          
+          base64CacheRef.current[objectUrl] = dataUrl;
+          setImageAttachments(prev => {
+            if (prev.length >= 3) return prev;
+            return [...prev, { url: objectUrl, fileName: `Kamera_LiveTask_${timestamp}.jpg` }];
+          });
+          stopCamera();
+        }
+      }, 'image/jpeg', 0.80);
+    } catch (err) {
+      console.error("Capture direct frame failed:", err);
+      alert("Gagal menangkap foto dari kamera live. Silakan coba kembali.");
+    }
+  };
+
+  const toggleCameraFacing = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCameraFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
   };
 
   const clickGalleryArea = (e: React.MouseEvent) => {
@@ -277,8 +409,12 @@ export default function TaskFormModal({
   };
 
   const clickUploadArea = (e: React.MouseEvent) => {
-    // If the general card area is clicked, we default to opening the gallery selector
-    // unless specific buttons inside are clicked.
+    // Stop bubbling immediately if clicking buttons/triggers to prevent double triggering (gallery + camera trigger)
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('input')) {
+      return;
+    }
+    
     if (imageAttachments.length >= 3) {
       alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
       return;
@@ -883,6 +1019,124 @@ export default function TaskFormModal({
                   id="confirm_save_btn"
                 >
                   Ya, Simpan
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* DIRECT ACTIVE CAMERA STREAM PORTAL */}
+      <AnimatePresence>
+        {isLiveCameraOpen && (
+          <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+              id="live_camera_portal_box"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-800/80 bg-slate-900/60">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-xs font-black text-white uppercase tracking-widest font-mono">
+                    KAMERA LIVE OPERASIONAL
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Viewport Frame */}
+              <div className="relative aspect-[4/3] bg-black flex items-center justify-center overflow-hidden border-b border-slate-800">
+                {cameraLoading && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/90 text-slate-400 space-y-2">
+                    <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                    <span className="text-xs font-bold font-sans uppercase tracking-wider text-orange-500">
+                      Menghubungkan Kamera...
+                    </span>
+                  </div>
+                )}
+                
+                {cameraError ? (
+                  <div className="absolute inset-0 z-10 p-6 flex flex-col items-center justify-center bg-slate-950 text-center space-y-3">
+                    <p className="text-xs font-semibold text-red-400 leading-relaxed max-w-sm">
+                      {cameraError}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => startCamera(cameraFacingMode)}
+                      className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-orange-500 text-[10.5px] font-black rounded-lg transition-all cursor-pointer uppercase font-mono"
+                    >
+                      Coba Lagi
+                    </button>
+                    
+                    <div className="pt-2">
+                      <p className="text-[9.5px] text-slate-500 max-w-xs">
+                        Jika masalah berlanjut, harap upload foto secara konvensional via opsi Buka Galeri.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* The HTML5 Real Video stream element wrapper */}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{
+                    // Mirror feed only if using the front facing camera (person selfie)
+                    transform: cameraFacingMode === 'user' ? 'scaleX(-1)' : 'none'
+                  }}
+                />
+                
+                {/* Active Facing mode indicator HUD overlay */}
+                <div className="absolute bottom-3 left-3 bg-black/70 px-2 py-1 rounded-lg text-[9px] font-mono font-bold text-slate-300 border border-slate-850 uppercase select-none flex items-center gap-1.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Kamera: {cameraFacingMode === 'environment' ? 'BELAKANG (OK)' : 'DEPAN (SELFIE)'}</span>
+                </div>
+              </div>
+
+              {/* Bottom Tactile Operational Panel */}
+              <div className="p-4 bg-slate-950 flex flex-col sm:flex-row items-center gap-3 justify-between">
+                {/* Camera Switcher */}
+                <button
+                  type="button"
+                  onClick={toggleCameraFacing}
+                  className="w-full sm:w-auto py-2.5 px-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                  title="Ganti arah kamera (Depan/Belakang)"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-orange-500 animate-spin-slow" />
+                  <span className="uppercase tracking-wider text-[10px] font-mono">Alihkan Kamera</span>
+                </button>
+
+                {/* Main Capture Strike Button */}
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  disabled={cameraLoading || !!cameraError}
+                  className="w-full sm:w-auto flex-1 py-3 px-6 bg-orange-500 hover:bg-orange-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/10 cursor-pointer transition-all"
+                >
+                  <Camera className="w-4 h-4 text-white" />
+                  <span className="uppercase tracking-widest text-[11px]">JEPRET & UNGGAH FOTO</span>
+                </button>
+
+                {/* Cancel Stream */}
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="w-full sm:w-auto py-2.5 px-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-white font-bold rounded-xl text-xs flex items-center justify-center cursor-pointer transition-all"
+                >
+                  Kembali
                 </button>
               </div>
             </motion.div>

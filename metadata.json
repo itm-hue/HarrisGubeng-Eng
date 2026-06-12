@@ -1,7 +1,7 @@
 {
   "name": "Hotel Harris Gubeng Task Manager",
   "description": "A dynamic task management system for Hotel Harris Gubeng technicians and administrators with real-time Supabase sync, Google Drive image uploading, automated PDF generation, and old csv archive uploads.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera"],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
