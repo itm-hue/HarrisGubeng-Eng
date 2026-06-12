@@ -25,7 +25,7 @@ export default function TaskDetailsModal({ isOpen, task, onClose }: TaskDetailsM
 
   const imageUrls = Array.from(new Set(
     rawParts.map(getDirectDriveUrl)
-  )).filter(url => url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/')));
+  )).filter(url => url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('blob:')));
 
   const history = Array.isArray(task.history) ? task.history.filter(Boolean) : [];
 

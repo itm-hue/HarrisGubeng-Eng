@@ -488,6 +488,19 @@ html.light #mobile_tasks_list > div {
   border-radius: 1rem !important;
 }
 
+/* Styling for mobile task cards representing upgraded status (Pending -> Complete) */
+#mobile_tasks_list > div.pending-to-complete-card {
+  background-color: rgba(245, 158, 11, 0.07) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.06) !important;
+}
+
+html.light #mobile_tasks_list > div.pending-to-complete-card {
+  background-color: #fffbeb !important; /* Soft warm amber bg */
+  border: 1px solid #fcd34d !important; /* Warm amber border */
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.08) !important;
+}
+
 /* Hardcoded specialty tags and sub-badge cards in light-mode list views */
 html.light .bg-\[\#091526\]\/40 {
   background-color: #f8fafc !important;

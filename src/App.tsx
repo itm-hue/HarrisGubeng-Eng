@@ -25,10 +25,6 @@ const getShortFileNameFromUrl = (url: string): string => {
   if (url.includes('file=')) {
     return url.split('file=')[1] || url;
   }
-  if (url.startsWith('http')) {
-    const parts = url.split('/');
-    return parts[parts.length - 1] || url;
-  }
   return url;
 };
 

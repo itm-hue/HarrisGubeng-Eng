@@ -133,7 +133,8 @@ export default function ArchiveHistoryCsv() {
   // Extract a short filename from a database cell string
   const extractShortFilename = (val: string): string => {
     if (!val) return '';
-    const firstVal = val.split(',')[0].trim();
+    const parts = parseImageUrls(val);
+    const firstVal = parts[0] || '';
     
     if (firstVal.includes('?file=')) {
       const part = firstVal.split('?file=')[1];

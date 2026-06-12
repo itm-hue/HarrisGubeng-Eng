@@ -56,6 +56,8 @@ export default function TaskFormModal({
   
   // Cache to store heavy Base64 image strings off React state to prevent slow render and hangs
   const base64CacheRef = useRef<Record<string, string>>({});
+  const lastPrefilledTaskIdRef = useRef<string | null | undefined>(undefined);
+  const lastPrefilledOpenRef = useRef<boolean>(false);
 
   // Real WebRTC Live Camera configuration states & refs
   const [isLiveCameraOpen, setIsLiveCameraOpen] = useState(false);
@@ -135,57 +137,72 @@ export default function TaskFormModal({
 
   // Prefill dates or edit item
   useEffect(() => {
-    if (taskToEdit) {
-      // In Edit Mode
-      setDate(taskToEdit.date);
-      setStartTime(taskToEdit.start_time);
-      setEndTime(taskToEdit.end_time);
-      setAreaType(taskToEdit.area_type);
-      setAreaDetail(taskToEdit.area_detail || '');
-      setSpecialty(taskToEdit.specialty);
-      setShift(taskToEdit.shift || '1');
-      setMaintenanceType(taskToEdit.maintenance_type || 'Corrective');
-      setDescription(taskToEdit.description);
-      setImageUrl(taskToEdit.image_url || '');
-      setStatus(currentUser?.role?.toUpperCase() === 'USER' ? 'Pending' : taskToEdit.status);
+    // If the modal was closed and is now being opened, OR if the task ID being edited has changed:
+    const isOpenJustChanged = isOpen && !lastPrefilledOpenRef.current;
+    const taskChanged = taskToEdit?.id !== lastPrefilledTaskIdRef.current;
 
-      const urls = parseImageUrls(taskToEdit.image_url);
-      const loadedAttachments = urls.map((url, i) => ({
-        url,
-        fileName: url.startsWith('http') ? `Foto_Drive_${i + 1}.jpg` : `Foto_${i + 1}.jpg`
-      }));
-      setImageAttachments(loadedAttachments);
-      base64CacheRef.current = {};
-    } else {
-      // In Add Mode: Date is auto/readonly as requested!
-      const todayString = new Date().toISOString().substring(0, 10);
-      setDate(todayString);
-      
-      // Get current hours + minutes rounded
-      const now = new Date();
-      const formatTime = (d: Date) => {
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        return `${hh}:${mm}`;
-      };
-      
-      setStartTime(formatTime(now));
-      
-      // End hour is +1 hour by default
-      const endNow = new Date(now.getTime() + 60 * 60 * 1000);
-      setEndTime(formatTime(endNow));
+    if (isOpenJustChanged || taskChanged) {
+      lastPrefilledOpenRef.current = isOpen;
+      lastPrefilledTaskIdRef.current = taskToEdit?.id;
 
-      // Reset fields
-      setAreaType(areas[0]?.name || 'Guest Room');
-      setAreaDetail('');
-      setSpecialty(categories[0]?.name || 'AC');
-      setShift('1');
-      setMaintenanceType(maintenanceTypes[0]?.name || 'Corrective');
-      setDescription('');
-      setImageUrl('');
-      setStatus('Pending');
-      setImageAttachments([]);
-      base64CacheRef.current = {};
+      if (taskToEdit) {
+        // In Edit Mode
+        setDate(taskToEdit.date);
+        setStartTime(taskToEdit.start_time);
+        setEndTime(taskToEdit.end_time);
+        setAreaType(taskToEdit.area_type);
+        setAreaDetail(taskToEdit.area_detail || '');
+        setSpecialty(taskToEdit.specialty);
+        setShift(taskToEdit.shift || '1');
+        setMaintenanceType(taskToEdit.maintenance_type || 'Corrective');
+        setDescription(taskToEdit.description);
+        setImageUrl(taskToEdit.image_url || '');
+        setStatus(currentUser?.role?.toUpperCase() === 'USER' ? 'Pending' : taskToEdit.status);
+
+        const urls = parseImageUrls(taskToEdit.image_url);
+        const loadedAttachments = urls.map((url, i) => ({
+          url,
+          fileName: url.startsWith('http') ? `Foto_Drive_${i + 1}.jpg` : `Foto_${i + 1}.jpg`
+        }));
+        setImageAttachments(loadedAttachments);
+        base64CacheRef.current = {};
+      } else {
+        // In Add Mode: Date is auto/readonly as requested!
+        const todayString = new Date().toISOString().substring(0, 10);
+        setDate(todayString);
+        
+        // Get current hours + minutes rounded
+        const now = new Date();
+        const formatTime = (d: Date) => {
+          const hh = String(d.getHours()).padStart(2, '0');
+          const mm = String(d.getMinutes()).padStart(2, '0');
+          return `${hh}:${mm}`;
+        };
+        
+        setStartTime(formatTime(now));
+        
+        // End hour is +1 hour by default
+        const endNow = new Date(now.getTime() + 60 * 60 * 1000);
+        setEndTime(formatTime(endNow));
+
+        // Reset fields
+        setAreaType(areas[0]?.name || 'Guest Room');
+        setAreaDetail('');
+        setSpecialty(categories[0]?.name || 'AC');
+        setShift('1');
+        setMaintenanceType(maintenanceTypes[0]?.name || 'Corrective');
+        setDescription('');
+        setImageUrl('');
+        setStatus('Pending');
+        setImageAttachments([]);
+        base64CacheRef.current = {};
+      }
+    }
+
+    if (!isOpen) {
+      // Reset open ref when modal is closed
+      lastPrefilledOpenRef.current = false;
+      lastPrefilledTaskIdRef.current = undefined;
     }
   }, [taskToEdit, isOpen, areas, categories, maintenanceTypes, currentUser]);
 
@@ -262,11 +279,6 @@ export default function TaskFormModal({
 
   const processFile = async (file: File) => {
     if (!file) return;
-
-    if (imageAttachments.length >= 3) {
-      alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
-      return;
-    }
     
     // Check if image
     if (!file.type.startsWith('image/')) {
@@ -308,26 +320,35 @@ export default function TaskFormModal({
     e.stopPropagation();
     setDragActive(false);
 
-    if (imageAttachments.length >= 3) {
-      alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
-      return;
-    }
+    if (!e.dataTransfer.files) return;
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      await processFile(e.dataTransfer.files[0]);
+    const files = Array.from(e.dataTransfer.files) as File[];
+    let currentCount = imageAttachments.length;
+
+    for (const file of files) {
+      if (currentCount >= 3) {
+        alert('Batas maksimal 3 foto tercapai!');
+        break;
+      }
+      await processFile(file);
+      currentCount++;
     }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (imageAttachments.length >= 3) {
-      alert('Batas maksimal 3 foto tercapai! Harap hapus foto lama sebelum mengunggah foto baru.');
-      e.target.value = '';
-      return;
-    }
+    if (!e.target.files) return;
 
-    if (e.target.files && e.target.files[0]) {
-      await processFile(e.target.files[0]);
+    const files = Array.from(e.target.files) as File[];
+    let currentCount = imageAttachments.length;
+
+    for (const file of files) {
+      if (currentCount >= 3) {
+        alert('Batas maksimal 3 foto tercapai!');
+        break;
+      }
+      await processFile(file);
+      currentCount++;
     }
     
     // Reset file input value so same file/photo can be triggered/uploaded again if needed
@@ -739,6 +760,7 @@ export default function TaskFormModal({
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 accept="image/*"
+                multiple
                 className="hidden"
                 id="form_file_selector"
                 disabled={imageAttachments.length >= 3}

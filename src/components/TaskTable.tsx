@@ -4,7 +4,7 @@ import { Search, Eye, Edit3, Trash2, AlertCircle, RefreshCw, Smile, ArrowUpDown,
 import { motion, AnimatePresence } from 'motion/react';
 import PdfExportButton from './PdfExportButton';
 import CsvExportButton from './CsvExportButton';
-import { getThumbnailUrl } from '../lib/imageUtils';
+import { getThumbnailUrl, parseImageUrls } from '../lib/imageUtils';
 import SafeImage from './SafeImage';
 
 interface TaskTableProps {
@@ -21,7 +21,7 @@ interface TaskTableProps {
 
 const getCleanShortName = (imageUrlStr: string | null | undefined): string => {
   if (!imageUrlStr) return '';
-  const parts = imageUrlStr.split(',').map(s => s.trim());
+  const parts = parseImageUrls(imageUrlStr);
   const firstPart = parts[0] || '';
   
   if (firstPart.includes('?file=')) {
@@ -45,6 +45,15 @@ const getCleanShortName = (imageUrlStr: string | null | undefined): string => {
     return slashParts[slashParts.length - 1] || firstPart;
   }
   return firstPart;
+};
+
+const checkIfPendingToComplete = (task: Task): boolean => {
+  if (task.status !== 'Complete') return false;
+  const historyArray = Array.isArray(task.history) ? task.history : [];
+  if (historyArray.length === 0) return false;
+  
+  // Check if any history entry has 'Pending' status
+  return historyArray.some(h => h && h.status === 'Pending');
 };
 
 const gDriveFolderId = "1pGCKZQo45p7ZsFZiaEvknP8hyFsYtnhe";
@@ -176,7 +185,7 @@ export default function TaskTable({
         <form onSubmit={handleSearchTrigger} className="space-y-5" id="task_filter_form">
           <div className="border-b border-slate-800/80 pb-3 flex justify-between items-center text-left">
             <div>
-              <h3 className="text-sm font-extrabold text-white tracking-wide">FILTER WORK ORDER LOGS</h3>
+              <h3 className="text-sm font-extrabold text-white tracking-wide">Cari data pekerjaan</h3>
               <p className="text-[11px] text-slate-400">Sesuaikan rentang tanggal, wilayah/kategori kerja, atau operator teknisi.</p>
             </div>
             <button
@@ -297,7 +306,7 @@ export default function TaskTable({
       <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-3xl overflow-hidden shadow-lg shadow-black/15">
         <div className="p-3 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row gap-2.5 sm:gap-4 justify-between items-center bg-slate-950/20">
           <div className="text-left w-full sm:w-auto">
-            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">RIWAYAT TASK PEKERJAAN</h3>
+            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">HISTORY PEKERJAAN</h3>
           </div>
           <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto justify-start sm:justify-end">
             <div className="flex bg-slate-950 border border-slate-850 p-0.5 rounded-lg">
@@ -361,8 +370,12 @@ export default function TaskTable({
                   {paginatedTasks.map((t, idx) => {
                     const taskIndex = startIndex + idx + 1;
                     const isEditable = isUserAdmin || t.status === 'Pending';
+                    const isPendingToComplete = checkIfPendingToComplete(t);
+                    const rowClass = isPendingToComplete
+                      ? "group border-b border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition-all duration-150"
+                      : "group border-b border-slate-850/40 transition-all hover:bg-slate-950/15";
                     return (
-                      <tr key={t.id} className="group border-b border-slate-850/40 transition-all hover:bg-slate-950/15">
+                      <tr key={t.id} className={rowClass}>
                         <td className="p-4 text-center font-mono text-slate-400 text-xs">
                           {taskIndex}
                         </td>
@@ -400,15 +413,22 @@ export default function TaskTable({
                           {t.technician_name}
                         </td>
                         <td className="p-4 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-[10px] ${
-                              t.status === 'Complete'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                        : 'bg-orange-500/15 text-orange-400 border border-orange-500/15'
-                            }`}
-                          >
-                            {t.status === 'Complete' ? 'Selesai' : 'Pending'}
-                          </span>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-[10px] ${
+                                t.status === 'Complete'
+                                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                          : 'bg-orange-500/15 text-orange-400 border border-orange-500/15'
+                              }`}
+                            >
+                              {t.status === 'Complete' ? 'Selesai' : 'Pending'}
+                            </span>
+                            {isPendingToComplete && (
+                              <span className="text-[9px] font-extrabold text-amber-500 uppercase tracking-wider font-mono bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-center leading-none" title="Pekerjaan dimulai dari status Pending kemudian diperbarui menjadi Selesai.">
+                                Update Selesai
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4 text-center">
                           {t.image_url ? (
@@ -472,10 +492,14 @@ export default function TaskTable({
             <div className="lg:hidden p-2.5 space-y-2.5" id="mobile_tasks_list">
               {paginatedTasks.map((t) => {
                 const isEditable = isUserAdmin || t.status === 'Pending';
+                const isPendingToComplete = checkIfPendingToComplete(t);
+                const cardClass = isPendingToComplete
+                  ? "p-3 rounded-xl bg-amber-500/5 border border-amber-500/30 space-y-2.5 flex flex-col justify-between text-left shadow-lg shadow-amber-500/5 pending-to-complete-card animate-fade-in"
+                  : "p-3 rounded-xl bg-slate-950/40 border border-slate-850 space-y-2.5 flex flex-col justify-between text-left";
                 return (
                   <div
                     key={t.id}
-                    className="p-3 rounded-xl bg-slate-950/40 border border-slate-850 space-y-2.5 flex flex-col justify-between text-left"
+                    className={cardClass}
                   >
                     <div className="flex justify-between items-center text-xs">
                       <div>
@@ -486,15 +510,22 @@ export default function TaskTable({
                           <span className="px-1 py-0.2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/15 text-[8px] font-bold">Shift {t.shift}</span>
                         </p>
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[9px] ${
-                          t.status === 'Complete'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
-                            : 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
-                        }`}
-                      >
-                        {t.status === 'Complete' ? 'Selesai' : 'Pending'}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[9px] ${
+                            t.status === 'Complete'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
+                              : 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
+                          }`}
+                        >
+                          {t.status === 'Complete' ? 'Selesai' : 'Pending'}
+                        </span>
+                        {isPendingToComplete && (
+                          <span className="text-[8px] font-extrabold text-amber-500 uppercase tracking-wider font-mono bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/15">
+                            Update Selesai
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-start gap-2.5">
                       {t.image_url ? (

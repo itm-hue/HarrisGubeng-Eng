@@ -5,6 +5,7 @@
 
 import { Task, User, AreaMaster, CategoryMaster, MaintenanceTypeMaster, TaskFilter } from '../types';
 import { supabase } from '../supabase';
+import { parseImageUrls } from './imageUtils';
 
 export const isConfigured = true;
 export { supabase };
@@ -43,10 +44,10 @@ function mapTaskToFrontend(dbTask: any): Task {
   // URL Bayangan jika hanya nama file pendek
   let displayImageUrl = '';
   if (dbTask.image_url) {
-    displayImageUrl = dbTask.image_url.split(',').map((urlPart: string) => {
-      const trimmedPart = urlPart.trim();
+    const rawParts = parseImageUrls(dbTask.image_url);
+    displayImageUrl = rawParts.map((trimmedPart: string) => {
       if (!trimmedPart) return '';
-      if (trimmedPart.startsWith('http') || trimmedPart.startsWith('data:')) {
+      if (trimmedPart.startsWith('http') || trimmedPart.startsWith('data:') || trimmedPart.startsWith('blob:')) {
         return trimmedPart;
       }
       return `${GOOGLE_APPS_SCRIPT_URL}?file=${trimmedPart}`;
