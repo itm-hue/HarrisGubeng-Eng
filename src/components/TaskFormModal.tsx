@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Task, TaskStatus, AreaMaster, CategoryMaster, MaintenanceTypeMaster, User, ImageAttachment } from '../types';
 import { dbService } from '../lib/supabase';
-import { X, Upload, Camera, FileImage, ClipboardCheck, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { X, Upload, Camera, FileImage, ClipboardCheck, Clock, Loader2, RefreshCw, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { parseImageUrls } from '../lib/imageUtils';
 import SafeImage from './SafeImage';
@@ -778,35 +778,55 @@ export default function TaskFormModal({
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-1.5 flex flex-col items-center space-y-3 w-full">
+                <div className="text-center py-2 flex flex-col items-center space-y-3.5 w-full">
                   <div className="text-center select-none">
-                    <p className="text-[10.5px] font-black text-slate-200 uppercase tracking-wider font-sans">
-                      Metode Unggah Foto Dokumentasi
+                    <p className="text-[10.5px] font-black text-orange-500 uppercase tracking-wider font-sans">
+                      Metode Pengambilan Foto Lapangan
                     </p>
-                    <p className="text-[9.5px] text-slate-500 mt-1 font-sans">
-                      Pilihan opsi langsung untuk semua ponsel:
+                    <p className="text-[9.5px] text-slate-400 mt-1 font-sans">
+                      Gunakan salah satu pilihan di bawah untuk akses langsung tanpa hambatan:
                     </p>
                   </div>
                   
-                  {/* Two distinct high-contrast tactile action buttons side-by-side */}
-                  <div className="flex flex-col xs:flex-row items-center gap-2.5 w-full max-w-md justify-center px-2">
+                  {/* Three distinct premium high-contrast action buttons stacked/responsive */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg justify-center px-1">
+                    {/* OPTION 1: Direct Native Camera App via standard HTML trusted label (perfect for Chrome Mobile / Vivo / OPPO) */}
+                    <label
+                      htmlFor="form_camera_selector"
+                      onClick={(e) => {
+                        // Prevent click propagation to avoid triggering the parent dropzone area click
+                        e.stopPropagation();
+                      }}
+                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border-2 border-orange-500/20 hover:border-orange-500 text-orange-500 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-orange-500/5 transition-all cursor-pointer min-h-[56px] text-center select-none active:scale-95"
+                    >
+                      <Camera className="w-5 h-5 text-orange-500 animate-pulse" />
+                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">Kamera Native HP</span>
+                    </label>
+
+                    {/* OPTION 2: Live In-App WebRTC Web Camera */}
                     <button
                       type="button"
-                      onClick={clickCameraArea}
-                      className="w-full xs:w-auto flex-1 py-1.5 sm:py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 hover:text-orange-400 text-orange-500 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-orange-500/5 transition-all cursor-pointer min-h-[44px] select-none"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsLiveCameraOpen(true);
+                      }}
+                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-amber-400 hover:text-amber-300 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer min-h-[56px] select-none active:scale-95"
                     >
-                      <Camera className="w-4 h-4 text-orange-500" />
-                      <span>AMBIL FOTO (KAMERA)</span>
+                      <Video className="w-5 h-5 text-amber-400" />
+                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">Kamera Live Web</span>
                     </button>
                     
-                    <button
-                      type="button"
-                      onClick={clickGalleryArea}
-                      className="w-full xs:w-auto flex-1 py-1.5 sm:py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 hover:text-white text-slate-300 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer min-h-[44px] select-none"
+                    {/* OPTION 3: Open Document Selection Photo Gallery */}
+                    <label
+                      htmlFor="form_file_selector"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer min-h-[56px] text-center select-none active:scale-95"
                     >
-                      <Upload className="w-4 h-4 text-emerald-400" />
-                      <span>BUKA GALERI FOTO</span>
-                    </button>
+                      <Upload className="w-5 h-5 text-emerald-400" />
+                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">Buka Galeri Foto</span>
+                    </label>
                   </div>
                 </div>
               )}
