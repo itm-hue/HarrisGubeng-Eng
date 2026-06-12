@@ -471,7 +471,7 @@ export default function App() {
             }
             
             // Timeout limits to force robust fallback if Drive times out after 35s
-            const uploadPromise = dbService.uploadImageToGoogleDrive(item.base64Url, customFileName);
+            const uploadPromise = dbService.uploadImageToGoogleDrive(item.base64Url, customFileName, "1pGCKZQo45p7ZsFZiaEvknP8hyFsYtnhe");
             const timeoutPromise = new Promise<string>((_, reject) =>
               setTimeout(() => reject(new Error('Google Drive upload timed out')), 35000)
             );

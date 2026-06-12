@@ -444,7 +444,7 @@ export const dbService = {
   async triggerDemoSync(eventType: 'INSERT' | 'UPDATE', customTask?: Partial<Task>) { return null; },
 
   // --- IMAGE UPLOAD TO GOOGLE DRIVE ---
-  async uploadImageToGoogleDrive(base64Data: string, fileName: string): Promise<string> {
+  async uploadImageToGoogleDrive(base64Data: string, fileName: string, folderId: string = "1pGCKZQo45p7ZsFZiaEvknP8hyFsYtnhe"): Promise<string> {
     const generatedShortName = fileName || `TASK_${Date.now()}.jpg`;
     try {
       let cleanBase64 = base64Data;
@@ -455,23 +455,37 @@ export const dbService = {
         cleanBase64 = base64Data.substring(base64Data.indexOf('base64,') + 7);
       }
       
-      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+      // Inject folder ID query parameters into the target url for Google Apps Script deployment configurations reading from e.parameter
+      const targetUrl = `${GOOGLE_APPS_SCRIPT_URL}?folderId=${encodeURIComponent(folderId)}&folder_id=${encodeURIComponent(folderId)}&folder=${encodeURIComponent(folderId)}&parentId=${encodeURIComponent(folderId)}`;
+      
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ base64: cleanBase64, base65: cleanBase64, mimeType, fileName: generatedShortName })
+        body: JSON.stringify({ 
+          base64: cleanBase64, 
+          base65: cleanBase64, 
+          mimeType, 
+          fileName: generatedShortName,
+          folderId: folderId,
+          folder_id: folderId,
+          folder: folderId,
+          parentId: folderId
+        })
       });
 
       if (response.ok) {
         const result = await response.json();
         if (result && result.status === 'success' && result.url) {
           return result.url; // Return the direct static hotlink drive URL from the script
+        } else {
+          throw new Error(result?.message || 'Google Apps Script returned status: unsuccessful');
         }
+      } else {
+        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
       }
-
-      return generatedShortName;
     } catch (e) {
-      console.error('Failed to upload image to Google Drive, falling back:', e);
-      return generatedShortName;
+      console.error('Failed to upload image to Google Drive:', e);
+      throw e; // Throw to let the caller handle the fallback correctly
     }
   },
 

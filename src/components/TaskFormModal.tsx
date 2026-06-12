@@ -1055,6 +1055,44 @@ export default function TaskFormModal({
         )}
       </AnimatePresence>
 
+      {/* FULL-SCREEN OVERLAY LOADING POPUP FOR SAVING AND UPLOADING (SUPPORTING PC, MOBILE & TABLET) */}
+      <AnimatePresence>
+        {uploading && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md" id="global_upload_saving_overlay">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center space-y-4"
+            >
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-orange-500/10 border border-orange-500/20">
+                  <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                  <span className="absolute inset-0 rounded-full bg-orange-500/5 animate-pulse" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <h4 className="text-sm font-extrabold text-white tracking-wide uppercase font-sans">
+                    Sedang Menyimpan Tugas
+                  </h4>
+                  <p className="text-xs text-orange-400 font-bold font-mono">
+                    Mengunggah {imageAttachments.length} Foto ke Google Drive...
+                  </p>
+                  <p className="text-[10px] sm:text-[10.5px] text-slate-450 leading-relaxed font-sans max-w-xs mx-auto text-slate-400">
+                    Proses ini mengompresi gambar dan mentransfer file ke cloud Drive Anda. Mohon biarkan halaman ini tetap terbuka beberapa saat.
+                  </p>
+                </div>
+              </div>
+
+              {/* Progress bar line representation */}
+              <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-850">
+                <div className="bg-gradient-to-r from-orange-500 to-amber-400 h-full w-4/5 rounded-full animate-pulse transition-all duration-1000" />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* DIRECT ACTIVE CAMERA STREAM PORTAL */}
       <AnimatePresence>
         {isLiveCameraOpen && (
