@@ -788,8 +788,8 @@ export default function TaskFormModal({
                     </p>
                   </div>
                   
-                  {/* Three distinct premium high-contrast action buttons stacked/responsive */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-lg justify-center px-1">
+                  {/* Two distinct high-contrast premium action buttons side-by-side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-md justify-center px-1">
                     {/* OPTION 1: Direct Native Camera App via standard HTML trusted label (perfect for Chrome Mobile / Vivo / OPPO) */}
                     <label
                       htmlFor="form_camera_selector"
@@ -797,26 +797,13 @@ export default function TaskFormModal({
                         // Prevent click propagation to avoid triggering the parent dropzone area click
                         e.stopPropagation();
                       }}
-                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border-2 border-orange-500/20 hover:border-orange-500 text-orange-500 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-orange-500/5 transition-all cursor-pointer min-h-[56px] text-center select-none active:scale-95"
+                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border-2 border-orange-500/20 hover:border-orange-500 text-orange-500 hover:text-orange-400 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-orange-500/5 transition-all cursor-pointer min-h-[56px] text-center select-none active:scale-95"
                     >
-                      <Camera className="w-5 h-5 text-orange-500 animate-pulse" />
-                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">Kamera Native HP</span>
+                      <Camera className="w-5 h-5 text-orange-500" />
+                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">AMBIL FOTO</span>
                     </label>
-
-                    {/* OPTION 2: Live In-App WebRTC Web Camera */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsLiveCameraOpen(true);
-                      }}
-                      className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-amber-400 hover:text-amber-300 font-extrabold rounded-xl text-[10.5px] sm:text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer min-h-[56px] select-none active:scale-95"
-                    >
-                      <Video className="w-5 h-5 text-amber-400" />
-                      <span className="uppercase tracking-wider text-[9.5px] sm:text-[10px]">Kamera Live Web</span>
-                    </button>
                     
-                    {/* OPTION 3: Open Document Selection Photo Gallery */}
+                    {/* OPTION 2: Open Document Selection Photo Gallery */}
                     <label
                       htmlFor="form_file_selector"
                       onClick={(e) => {
