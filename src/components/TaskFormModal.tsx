@@ -38,12 +38,34 @@ export default function TaskFormModal({
   const [areaType, setAreaType] = useState('');
   const [areaDetail, setAreaDetail] = useState('');
   const [specialty, setSpecialty] = useState('');
-  const [shift, setShift] = useState<'1' | '2' | '3'>('1');
-  const [maintenanceType, setMaintenanceType] = useState('Corrective');
+  const [shift, setShift] = useState<'1' | '2' | '3' | ''>('');
+  const [maintenanceType, setMaintenanceType] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [status, setStatus] = useState<TaskStatus>('Pending');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [selectedCoTechnicians, setSelectedCoTechnicians] = useState<string[]>([]);
+
+  // Fetch users on initialization
+  useEffect(() => {
+    let isSubscribed = true;
+    async function fetchUsers() {
+      try {
+        const u = await dbService.getUsers();
+        if (isSubscribed) {
+          setUsersList(u);
+        }
+      } catch (err) {
+        console.error('Failed to load users in TaskFormModal:', err);
+      }
+    }
+    fetchUsers();
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
   // Multi-image attachments structures
   const [imageAttachments, setImageAttachments] = useState<ImageAttachment[]>([]);
@@ -142,6 +164,7 @@ export default function TaskFormModal({
     const taskChanged = taskToEdit?.id !== lastPrefilledTaskIdRef.current;
 
     if (isOpenJustChanged || taskChanged) {
+      setAttemptedSubmit(false);
       lastPrefilledOpenRef.current = isOpen;
       lastPrefilledTaskIdRef.current = taskToEdit?.id;
 
@@ -153,7 +176,7 @@ export default function TaskFormModal({
         setAreaType(taskToEdit.area_type);
         setAreaDetail(taskToEdit.area_detail || '');
         setSpecialty(taskToEdit.specialty);
-        setShift(taskToEdit.shift || '1');
+        setShift(taskToEdit.shift || '');
         setMaintenanceType(taskToEdit.maintenance_type || 'Corrective');
         setDescription(taskToEdit.description);
         setImageUrl(taskToEdit.image_url || '');
@@ -165,6 +188,13 @@ export default function TaskFormModal({
           fileName: url.startsWith('http') ? `Foto_Drive_${i + 1}.jpg` : `Foto_${i + 1}.jpg`
         }));
         setImageAttachments(loadedAttachments);
+        
+        // Prefill co-technicians selection
+        const initialCoTechs = taskToEdit.co_technicians
+          ? taskToEdit.co_technicians.split(',').map(s => s.trim()).filter(Boolean)
+          : [];
+        setSelectedCoTechnicians(initialCoTechs);
+        
         base64CacheRef.current = {};
       } else {
         // In Add Mode: Date is auto/readonly as requested!
@@ -186,15 +216,16 @@ export default function TaskFormModal({
         setEndTime(formatTime(endNow));
 
         // Reset fields
-        setAreaType(areas[0]?.name || 'Guest Room');
+        setAreaType('');
         setAreaDetail('');
-        setSpecialty(categories[0]?.name || 'AC');
-        setShift('1');
-        setMaintenanceType(maintenanceTypes[0]?.name || 'Corrective');
+        setSpecialty('');
+        setShift('');
+        setMaintenanceType('');
         setDescription('');
         setImageUrl('');
         setStatus('Pending');
         setImageAttachments([]);
+        setSelectedCoTechnicians([]);
         base64CacheRef.current = {};
       }
     }
@@ -461,9 +492,26 @@ export default function TaskFormModal({
   const handlePreSubmitCheck = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 1. Strict validation - If any property is empty/undefined, show simple alert
-    if (!date || !startTime || !endTime || !areaType || !specialty || !shift || !maintenanceType || !description.trim()) {
-      alert('Harap isi semua kolom!');
+    // Set attemptedSubmit to true to display visual guides on empty fields
+    setAttemptedSubmit(true);
+    
+    // Strict validation - Identify all empty mandatory fields for detailed user notification
+    const missingFields: string[] = [];
+    if (!date) missingFields.push('Tanggal Operasional');
+    if (!startTime) missingFields.push('Jam Mulai');
+    if (!endTime) missingFields.push('Jam Selesai');
+    if (!areaType) missingFields.push('Area / Lokasi (Wajib)');
+    if (!areaDetail.trim()) missingFields.push('Keterangan Area Spesifik (Wajib)');
+    if (!specialty) missingFields.push('Kategori Kerusakan / Spesialisasi (Wajib)');
+    if (!shift) missingFields.push('Shift');
+    if (!maintenanceType) missingFields.push('Tipe Maintenance');
+    if (!description.trim()) missingFields.push('Detail Kerusakan & Tindakan Perbaikan (Wajib)');
+    if (imageAttachments.length === 0) {
+      missingFields.push('Foto Dokumentasi Lapangan (Wajib upload minimal 1 foto)');
+    }
+
+    if (missingFields.length > 0) {
+      alert(`⚠️ Peringatan: Form belum lengkap!\n\n${missingFields.map((field, idx) => `${idx + 1}. ${field}`).join('\n')}\n\nHarap lengkapi seluruh kolom wajib di atas sebelum menyimpan task.`);
       return;
     }
 
@@ -484,13 +532,14 @@ export default function TaskFormModal({
       area_type: areaType || '',
       area_detail: areaDetail ? areaDetail.trim() : '',
       specialty: specialty || '',
-      shift,
+      shift: shift as '1' | '2' | '3',
       maintenance_type: maintenanceType || 'Corrective',
-      description: description.trim(),
+      description: description.trim() || '-',
       image_url: '', // Will be updated within onSave callback
       status,
       technician_name: taskToEdit ? taskToEdit.technician_name : currentUser.fullname,
       technician_id: taskToEdit ? taskToEdit.technician_id : currentUser.id,
+      co_technicians: selectedCoTechnicians.join(', '),
       id: taskToEdit ? taskToEdit.id : undefined
     };
 
@@ -571,9 +620,9 @@ export default function TaskFormModal({
             {/* Operational Shift Picker */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Shift Operasional
+                Shift Operasional (Wajib)
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5 animate-fade-in">
                 {(['1', '2', '3'] as const).map((sNum) => (
                   <button
                     type="button"
@@ -582,13 +631,20 @@ export default function TaskFormModal({
                     className={`py-1.5 sm:py-2 text-[10.5px] sm:text-xs font-bold rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
                       shift === sNum
                         ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/15 font-extrabold'
-                        : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:bg-slate-950 hover:text-slate-300'
+                        : attemptedSubmit && !shift
+                          ? 'border-red-500/60 bg-red-950/10 text-red-300 hover:border-red-500 hover:bg-slate-950/40 shadow-sm shadow-red-500/5'
+                          : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:bg-slate-950 hover:text-slate-300'
                     }`}
                   >
                     Shift {sNum}
                   </button>
                 ))}
               </div>
+              {attemptedSubmit && !shift && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-1.5 flex items-center gap-1">
+                  ⚠️ Shift Operasional wajib dipilih!
+                </p>
+              )}
             </div>
           </div>
 
@@ -603,9 +659,18 @@ export default function TaskFormModal({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all"
+                className={`w-full bg-slate-950/60 font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all border ${
+                  attemptedSubmit && !startTime
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500 text-red-200'
+                    : 'border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white'
+                }`}
                 id="form_start_time"
               />
+              {attemptedSubmit && !startTime && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Jam mulai wajib diisi!
+                </p>
+              )}
             </div>
 
             {/* End Time */}
@@ -618,9 +683,18 @@ export default function TaskFormModal({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all"
+                className={`w-full bg-slate-950/60 font-mono rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all border ${
+                  attemptedSubmit && !endTime
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500 text-red-200'
+                    : 'border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white'
+                }`}
                 id="form_end_time"
               />
+              {attemptedSubmit && !endTime && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Jam selesai wajib diisi!
+                </p>
+              )}
             </div>
           </div>
 
@@ -628,41 +702,61 @@ export default function TaskFormModal({
             {/* Area Master Dropdown */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Area Harris Hotel
+                Area Harris Hotel (Wajib)
               </label>
               <select
                 required
                 value={areaType}
                 onChange={(e) => setAreaType(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
+                className={`w-full bg-slate-950/60 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none border ${
+                  attemptedSubmit && !areaType
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500'
+                    : 'border-slate-800 focus:border-orange-500'
+                }`}
                 id="form_area_type"
               >
+                <option value="" className="bg-slate-950 text-slate-400">-- Pilih Area --</option>
                 {areas.map(a => (
                   <option key={a.id} value={a.name} className="bg-slate-950 text-slate-200">
                     {a.name}
                   </option>
                 ))}
               </select>
+              {attemptedSubmit && !areaType && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Area/Lokasi wajib dipilih!
+                </p>
+              )}
             </div>
 
             {/* Specialty category Dropdown */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Specialty Kategori Kerja
+                Specialty Kategori Kerja (Wajib)
               </label>
               <select
                 required
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
+                className={`w-full bg-slate-950/60 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none border ${
+                  attemptedSubmit && !specialty
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500'
+                    : 'border-slate-800 focus:border-orange-500'
+                }`}
                 id="form_specialty"
               >
+                <option value="" className="bg-slate-950 text-slate-400">-- Pilih Specialty --</option>
                 {categories.map(c => (
                   <option key={c.id} value={c.name} className="bg-slate-950 text-slate-200">
                     {c.name}
                   </option>
                 ))}
               </select>
+              {attemptedSubmit && !specialty && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Specialty pekerjaan wajib dipilih!
+                </p>
+              )}
             </div>
           </div>
 
@@ -670,30 +764,45 @@ export default function TaskFormModal({
             {/* Area Detail Details Text */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Keterangan Area Spesifik
+                Keterangan Area Spesifik (Wajib)
               </label>
               <input
                 type="text"
+                required
                 value={areaDetail}
                 onChange={(e) => setAreaDetail(e.target.value)}
                 placeholder="Cth: Kamar 402, Ubud room, Lift Lobby 1"
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all placeholder:text-slate-600"
+                className={`w-full bg-slate-950/60 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none transition-all placeholder:text-slate-600 border ${
+                  attemptedSubmit && !areaDetail.trim()
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500 text-red-200'
+                    : 'border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white'
+                }`}
                 id="form_area_detail"
               />
+              {attemptedSubmit && !areaDetail.trim() && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Keterangan area spesifik wajib diisi!
+                </p>
+              )}
             </div>
 
             {/* Type Maintenance */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Tipe Maintenance Work
+                Tipe Maintenance Work (Wajib)
               </label>
               <select
                 required
                 value={maintenanceType}
                 onChange={(e) => setMaintenanceType(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none"
+                className={`w-full bg-slate-950/60 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none border ${
+                  attemptedSubmit && !maintenanceType
+                    ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500'
+                    : 'border-slate-800 focus:border-orange-500'
+                }`}
                 id="form_maintenance_type"
               >
+                <option value="" className="bg-slate-950 text-slate-400">-- Pilih Tipe Maintenance --</option>
                 {maintenanceTypes.length > 0 ? (
                   maintenanceTypes.map((mt) => (
                     <option key={mt.id} value={mt.name} className="bg-slate-950 text-slate-200">
@@ -709,6 +818,66 @@ export default function TaskFormModal({
                   </>
                 )}
               </select>
+              {attemptedSubmit && !maintenanceType && (
+                <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                  ⚠️ Tipe Maintenance wajib dipilih!
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Dikerjakan Bersama (Co-Technicians / Partner Kerja) */}
+          <div className="space-y-1.5 p-3.5 bg-slate-950/40 rounded-xl border border-slate-800/40" id="form_co_technicians_group">
+            <label className="text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-wider block font-sans">
+              Dikerjakan Bersama (Partner / Rekan Teknisi Tambahan) <span className="text-orange-400 font-bold lowercase text-[10px]">(opsional)</span>
+            </label>
+            
+            <div className="space-y-2.5">
+              <select
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && !selectedCoTechnicians.includes(val)) {
+                    setSelectedCoTechnicians(prev => [...prev, val]);
+                  }
+                }}
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 text-slate-200 rounded-lg sm:rounded-xl py-1.5 px-3 sm:py-2 sm:px-4 text-xs focus:outline-none cursor-pointer"
+                id="form_co_technicians_select"
+              >
+                <option value="" className="bg-slate-950 text-slate-400">-- Pilih Rekan Teknisi (Opsional) --</option>
+                {usersList
+                  .filter(u => u.role === 'TEKNISI' && u.fullname !== currentUser?.fullname && u.fullname !== (taskToEdit?.technician_name || ''))
+                  .map(u => (
+                    <option key={u.id} value={u.fullname} disabled={selectedCoTechnicians.includes(u.fullname)} className="bg-slate-950 text-slate-200">
+                      {u.fullname} {selectedCoTechnicians.includes(u.fullname) ? ' (Sudah dipilih)' : ''}
+                    </option>
+                  ))
+                }
+              </select>
+
+              {/* Display selected partner tags */}
+              {selectedCoTechnicians.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {selectedCoTechnicians.map(name => (
+                    <div
+                      key={name}
+                      className="bg-orange-500/10 border border-orange-500/20 text-orange-400 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center gap-1.5"
+                    >
+                      <span>{name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCoTechnicians(prev => prev.filter(n => n !== name))}
+                        className="text-orange-500 hover:text-orange-300 font-bold ml-0.5 text-xs focus:outline-none transition-colors cursor-pointer"
+                        title="Hapus rekan"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-500 italic block font-mono pl-0.5">Belum ada rekan teknisi tambahan dipilih</p>
+              )}
             </div>
           </div>
 
@@ -723,16 +892,25 @@ export default function TaskFormModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Jelaskan kerusakan dan langkah tindakan perbaikan teknis yang telah diambil..."
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white rounded-lg sm:rounded-2xl p-3 sm:p-4 text-xs focus:outline-none transition-all placeholder:text-slate-600 leading-relaxed"
+              className={`w-full bg-slate-950/60 rounded-lg sm:rounded-2xl p-3 sm:p-4 text-xs focus:outline-none transition-all placeholder:text-slate-600 leading-relaxed border ${
+                attemptedSubmit && !description.trim()
+                  ? 'border-red-500 ring-1 ring-red-500/20 focus:border-red-500 text-red-200'
+                  : 'border-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white'
+              }`}
               id="form_description"
             />
+            {attemptedSubmit && !description.trim() && (
+              <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                ⚠️ Detail kerusakan & tindakan perbaikan wajib diisi!
+              </p>
+            )}
           </div>
 
           {/* DRAG AND DROP / CAMERA SNAP AREA */}
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Foto Dokumentasi Lapangan (Maksimal 3 Foto)
+                Foto Dokumentasi Lapangan (Wajib, Maksimal 3 Foto)
               </label>
               <span className={`text-[10px] sm:text-[11px] font-mono font-bold ${imageAttachments.length >= 3 ? 'text-red-400' : 'text-slate-500'}`}>
                 {imageAttachments.length} / 3 Foto
@@ -750,7 +928,9 @@ export default function TaskFormModal({
                   ? 'border-red-900/30 bg-red-950/5 cursor-not-allowed text-slate-500'
                   : dragActive
                     ? 'border-orange-500 bg-orange-500/5'
-                    : 'border-slate-800 hover:border-slate-700 bg-slate-950/45 hover:bg-slate-950/70'
+                    : attemptedSubmit && imageAttachments.length === 0
+                      ? 'border-red-500 bg-red-950/10 hover:border-red-400'
+                      : 'border-slate-800 hover:border-slate-700 bg-slate-950/45 hover:bg-slate-950/70'
               }`}
               id="upload_drop_zone"
             >
@@ -840,6 +1020,12 @@ export default function TaskFormModal({
                 </div>
               )}
             </div>
+
+            {attemptedSubmit && imageAttachments.length === 0 && (
+              <p className="text-[10px] text-red-400 font-semibold font-sans mt-0.5 flex items-center gap-1">
+                ⚠️ Foto Dokumentasi Lapangan wajib diunggah (minimal 1 foto)!
+              </p>
+            )}
 
             {/* Thumbnail preview grid list */}
             {imageAttachments.length > 0 && (

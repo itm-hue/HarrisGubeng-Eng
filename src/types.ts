@@ -38,6 +38,7 @@ export interface Task {
   status: TaskStatus;
   technician_name: string;
   technician_id: string;
+  co_technicians?: string;
   history?: any[] | string;
 }
 

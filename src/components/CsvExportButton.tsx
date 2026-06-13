@@ -51,6 +51,9 @@ export default function CsvExportButton({ filteredTasks }: CsvExportButtonProps)
             return resolved;
           })
           .join(' ; ');
+        const techName = task.co_technicians
+          ? `${task.technician_name} (+ ${task.co_technicians})`
+          : (task.technician_name || '');
         const row = [
           (idx + 1).toString(),
           task.date || '',
@@ -61,7 +64,7 @@ export default function CsvExportButton({ filteredTasks }: CsvExportButtonProps)
           task.description || '',
           task.maintenance_type || 'Corrective',
           task.specialty || '',
-          task.technician_name || '',
+          techName,
           imageUrlsString
         ];
 

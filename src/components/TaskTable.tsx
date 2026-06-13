@@ -409,8 +409,15 @@ export default function TaskTable({
                             </span>
                           </div>
                         </td>
-                        <td className="p-4 text-slate-300 font-medium whitespace-pre-wrap break-words">
-                          {t.technician_name}
+                        <td className="p-4 text-slate-300 font-medium whitespace-pre-wrap break-words" id={`cell_technician_${t.id}`}>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-semibold text-slate-200 block leading-tight">{t.technician_name}</span>
+                            {t.co_technicians && (
+                              <span className="text-[10.5px] text-orange-400/90 font-medium block leading-tight mt-0.5">
+                                + {t.co_technicians}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4 text-center">
                           <div className="flex flex-col items-center justify-center gap-1">
@@ -562,10 +569,18 @@ export default function TaskTable({
                         </p>
                       </div>
                     </div>
-                    <div className="pt-2 border-t border-slate-850 flex justify-between items-center bg-[#0d1624]/20 -mx-3 -mb-3 p-2 sm:p-2.5 rounded-b-xl">
-                      <div className="flex items-center gap-1 min-w-0">
-                        <span className="text-[8px] font-bold text-slate-550 font-mono tracking-wider">TEKNISI:</span>
-                        <span className="text-[9.5px] font-extrabold text-slate-300 truncate">{t.technician_name || '-'}</span>
+                    <div className="pt-2 border-t border-slate-850 flex justify-between items-center bg-[#0d1624]/20 -mx-3 -mb-3 p-2 sm:p-2.5 rounded-b-xl" id={`mobile_bottom_bar_${t.id}`}>
+                      <div className="flex flex-col items-start min-w-0 flex-1 pr-2">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <span className="text-[8px] font-bold text-slate-500 font-mono tracking-wider">TEKNISI:</span>
+                          <span className="text-[9.5px] font-extrabold text-slate-300 truncate">{t.technician_name || '-'}</span>
+                        </div>
+                        {t.co_technicians && (
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="text-[7.5px] font-bold text-orange-400 font-mono tracking-tight shrink-0">REKAN:</span>
+                            <span className="text-[9px] font-bold text-orange-400/80 truncate">{t.co_technicians}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button

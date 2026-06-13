@@ -224,7 +224,7 @@ export default function TaskDetailsModal({ isOpen, task, onClose }: TaskDetailsM
             </div>
 
             {/* Operator Team */}
-            <div className="space-y-1">
+            <div className="space-y-1" id="details_operator_box">
               <div className="flex items-center gap-1.5 text-[10px] text-slate-500 uppercase tracking-widest font-mono">
                 <User className="w-3.5 h-3.5 text-orange-500" />
                 <span>Dikerjakan Oleh</span>
@@ -232,6 +232,13 @@ export default function TaskDetailsModal({ isOpen, task, onClose }: TaskDetailsM
               <p className="text-xs font-semibold text-slate-200">
                 {task.technician_name}
               </p>
+              {task.co_technicians && (
+                <div className="pt-0.5" id="details_co_technicians_sub">
+                  <span className="text-[9.5px] font-bold text-orange-400/90 bg-orange-500/10 border border-orange-500/15 py-0.5 px-1.5 rounded-md inline-block">
+                    Bersama: {task.co_technicians}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

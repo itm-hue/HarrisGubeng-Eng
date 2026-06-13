@@ -69,6 +69,7 @@ function mapTaskToFrontend(dbTask: any): Task {
     status: dbTask.status || 'Pending',
     technician_name: dbTask.created_by_nama || '',
     technician_id: '',
+    co_technicians: dbTask.co_technicians || '',
     created_at: dbTask.created_at,
     history: parsedHistory
   };
@@ -104,6 +105,7 @@ function mapTaskToBackend(task: Partial<Task>): any {
   }
   if (task.status !== undefined) result.status = task.status;
   if (task.technician_name !== undefined) result.created_by_nama = task.technician_name;
+  if (task.co_technicians !== undefined) result.co_technicians = task.co_technicians;
   if (task.history !== undefined) result.history = task.history;
   
   return result;

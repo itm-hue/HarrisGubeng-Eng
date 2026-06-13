@@ -346,14 +346,22 @@ export default function PdfExportButton({ filteredTasks }: PdfExportButtonProps)
           doc.setTextColor(51, 65, 85);
 
           // Technician (separated into its own spacious column with word wrap)
-          doc.setFontSize(7.5);
-          const techName = task.technician_name || '';
+          doc.setFontSize(6.5);
+          const techName = task.co_technicians
+            ? `${task.technician_name}\n+ ${task.co_technicians}`
+            : (task.technician_name || '');
           const techLines: string[] = doc.splitTextToSize(techName, 26);
-          if (techLines.length > 1) {
-            doc.text(techLines[0] || '', 211, currentY + 6.0, { align: 'center' });
-            doc.text(techLines[1] || '', 211, currentY + 10.5, { align: 'center' });
+          if (techLines.length > 2) {
+            doc.text(techLines[0] || '', 209, currentY + 4.5, { align: 'center' });
+            doc.text(techLines[1] || '', 209, currentY + 8.0, { align: 'center' });
+            let lastLine = techLines[2] || '';
+            if (techLines.length > 3) lastLine = lastLine.substring(0, 10) + '...';
+            doc.text(lastLine, 209, currentY + 11.5, { align: 'center' });
+          } else if (techLines.length === 2) {
+            doc.text(techLines[0] || '', 209, currentY + 6.0, { align: 'center' });
+            doc.text(techLines[1] || '', 209, currentY + 10.5, { align: 'center' });
           } else if (techLines.length === 1) {
-            doc.text(techLines[0] || '', 211, currentY + 8.5, { align: 'center' });
+            doc.text(techLines[0] || '', 209, currentY + 8.5, { align: 'center' });
           }
 
           // Status (separated into its own spacious column)
