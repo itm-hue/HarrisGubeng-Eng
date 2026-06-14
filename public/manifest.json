@@ -1,0 +1,23 @@
+{
+  "name": "Hotel Harris Gubeng Task Manager",
+  "short_name": "Harris WO",
+  "description": "Task management system for Hotel Harris Gubeng technicians and administrators",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any"
+    }
+  ]
+}

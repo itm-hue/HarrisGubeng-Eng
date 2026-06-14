@@ -168,6 +168,47 @@ export function mapFrontendUserToDb(user: Partial<User> & { password?: string })
   return payload;
 }
 
+async function triggerPushNotification(action: 'INSERT' | 'UPDATE', task: Task) {
+  try {
+    let title = '';
+    let body = '';
+    
+    if (action === 'INSERT') {
+      title = 'Work Order Baru! 🛠️';
+      body = `Area: ${task.area_type || 'N/A'} (${task.area_detail || '-'}) - ${task.description || '-'}`;
+    } else if (action === 'UPDATE' && task.status === 'Complete') {
+      title = 'WO Selesai Diperbaiki! ✅';
+      body = `Tugas di area ${task.area_type || ''} (${task.area_detail || ''}) telah diselesaikan oleh ${task.technician_name || 'Teknisi'}`;
+    } else {
+      return;
+    }
+
+    const payload = {
+      title,
+      body,
+      tag: `harris-wo-${task.id}`,
+      data: {
+        url: '/',
+        taskId: task.id
+      }
+    };
+
+    const endpointUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/send-web-push` : '/api/send-web-push';
+    
+    fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }).then(res => res.json())
+      .then(data => console.log('[PUSH CLIENT] Hasil pengiriman notifikasi push:', data))
+      .catch(err => console.error('[PUSH CLIENT] Gagal memicu push notification:', err));
+  } catch (err) {
+    console.warn('Silent error triggering client-side web push:', err);
+  }
+}
+
 export const dbService = {
   isMockMode(): boolean { return false; },
   setDbMode(mode: 'MOCK' | 'REAL') {},
@@ -384,13 +425,18 @@ export const dbService = {
     const dbPayload = mapTaskToBackend(task);
     const { data, error } = await supabase.from('tasks').insert([dbPayload]).select();
     if (error) throw error;
-    return mapTaskToFrontend(data[0]);
+    const created = mapTaskToFrontend(data[0]);
+    triggerPushNotification('INSERT', created);
+    return created;
   },
 
   async updateTask(task: Task): Promise<Task> {
     const dbPayload = mapTaskToBackend(task);
     const { error } = await supabase.from('tasks').update(dbPayload).eq('id', task.id);
     if (error) throw error;
+    if (task.status === 'Complete') {
+      triggerPushNotification('UPDATE', task);
+    }
     return task;
   },
 
@@ -589,6 +635,64 @@ export const dbService = {
       return true;
     } catch (e) {
       console.error('Gagal menghapus file di Google Drive:', e);
+      return false;
+    }
+  },
+
+  // --- PUSH NOTIFICATION SUBSCRIPTION ---
+  async savePushSubscription(sub: any, userId?: string, username?: string): Promise<boolean> {
+    try {
+      const keys = sub.keys || (typeof sub.toJSON === 'function' ? sub.toJSON().keys : null);
+      const payload = {
+        user_id: userId || null,
+        username: username || null,
+        endpoint: sub.endpoint,
+        keys_p256dh: keys?.p256dh || '',
+        keys_auth: keys?.auth || '',
+        created_at: new Date().toISOString()
+      };
+
+      // Check if already exists, update if true, else insert
+      const { data: existing, error: selectErr } = await supabase
+        .from('push_subscriptions')
+        .select('id')
+        .eq('endpoint', sub.endpoint)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from('push_subscriptions')
+          .update({
+            user_id: userId || null,
+            username: username || null,
+            keys_p256dh: keys?.p256dh || '',
+            keys_auth: keys?.auth || ''
+          })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('push_subscriptions')
+          .insert([payload]);
+        if (error) throw error;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error saving push subscription to Supabase:', e);
+      return false;
+    }
+  },
+
+  async deletePushSubscription(endpoint: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('endpoint', endpoint);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error('Error deleting push subscription from Supabase:', e);
       return false;
     }
   }

@@ -14,7 +14,7 @@ import TaskFormModal from './components/TaskFormModal';
 import TaskDetailsModal from './components/TaskDetailsModal';
 import AdminPanel from './components/AdminPanel';
 import ArchiveHistoryCsv from './components/ArchiveHistoryCsv';
-import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Hotel, User as UserIcon, LogOut, Plus, ShieldCheck, Zap, Database, Info, FileSpreadsheet, LayoutDashboard, Settings, RefreshCw, Sun, Moon, ChevronDown, Bell, BellOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const getShortFileNameFromUrl = (url: string): string => {
@@ -27,6 +27,24 @@ const getShortFileNameFromUrl = (url: string): string => {
   }
   return url;
 };
+
+// VAPID Public Key for Web Push Notification protocol
+const VAPID_PUBLIC_KEY = 'BNxksZRSC9NZMBo2yD8Eq6MIlac9IoVLOwWru3_uG5-AJoUkJJ0qRxGCcTOBVp8fNLYzYnfJjecI089IZBjEea0';
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -77,6 +95,144 @@ export default function App() {
   const [activeTaskToEdit, setActiveTaskToEdit] = useState<Task | null>(null);
   const [activeTaskToView, setActiveTaskToView] = useState<Task | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  
+  // Web Push Notification States
+  const [pushSupport, setPushSupport] = useState<'checking' | 'supported' | 'unsupported' | 'ios-pwa-required'>('checking');
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [isPushSubscribed, setIsPushSubscribed] = useState<boolean>(false);
+  const [subscribing, setSubscribing] = useState<boolean>(false);
+  const [pushStatusText, setPushStatusText] = useState<string>('');
+  const [showPushSetupModal, setShowPushSetupModal] = useState<boolean>(false);
+
+  // Initialize PWA Service Worker & check Push Notification subscriptions
+  useEffect(() => {
+    let active = true;
+
+    const checkSubscription = async () => {
+      // Check if browser supports Service Workers & Push Notifications
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        // Check if user is on iOS and needs standalone mode
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        if (isIOS && !isStandalone) {
+          if (active) setPushSupport('ios-pwa-required');
+        } else {
+          if (active) setPushSupport('unsupported');
+        }
+        return;
+      }
+
+      if (active) {
+        setPushSupport('supported');
+        setPushPermission(Notification.permission);
+      }
+
+      try {
+        // Register the Service Worker in the public folder
+        const registration = await navigator.serviceWorker.register('./sw.js', {
+          scope: './'
+        });
+        console.log('Service Worker registered successfully with scope:', registration.scope);
+
+        // Check if we are already subscribed with the push service
+        const subscription = await registration.pushManager.getSubscription();
+        if (active) {
+          if (subscription) {
+            setIsPushSubscribed(true);
+            // Re-sync subscription with Supabase just in case
+            if (currentUser) {
+              dbService.savePushSubscription(subscription, currentUser.id, currentUser.fullname);
+            } else {
+              dbService.savePushSubscription(subscription);
+            }
+          } else {
+            setIsPushSubscribed(false);
+          }
+        }
+      } catch (err) {
+        console.warn('Error setting up Service Worker/Push Subscription on boot:', err);
+      }
+    };
+
+    checkSubscription();
+
+    return () => {
+      active = false;
+    };
+  }, [currentUser]);
+
+  const subscribeToPush = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return;
+    }
+    setSubscribing(true);
+    setPushStatusText('Mengaktifkan ijin notifikasi...');
+    try {
+      const permission = await Notification.requestPermission();
+      setPushPermission(permission);
+      
+      if (permission !== 'granted') {
+        setPushStatusText('Ijin notifikasi ditolak!');
+        setSubscribing(false);
+        return;
+      }
+      
+      setPushStatusText('Mendaftarkan perangkat...');
+      const registration = await navigator.serviceWorker.ready;
+      const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey
+      });
+      
+      setPushStatusText('Menyimpan ke Database...');
+      if (currentUser) {
+        await dbService.savePushSubscription(subscription, currentUser.id, currentUser.fullname);
+      } else {
+        await dbService.savePushSubscription(subscription);
+      }
+      
+      setIsPushSubscribed(true);
+      setPushStatusText('Notifikasi berhasil diaktifkan!');
+      
+      // Send a test local notification
+      registration.showNotification('Harris Gubeng WO', {
+        body: 'Notifikasi berhasil diaktifkan pada ponsel Anda! Luar biasa!',
+        icon: './icon.svg',
+        badge: './icon.svg'
+      });
+      
+    } catch (err: any) {
+      console.error('Failed to subscribe user to push notifications:', err);
+      setPushStatusText(`Gagal mengaktifkan: ${err.message || err}`);
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const unsubscribeFromPush = async () => {
+    try {
+      setSubscribing(true);
+      setPushStatusText('Menghapus pendaftaran...');
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) {
+        // Delete from database
+        await dbService.deletePushSubscription(subscription.endpoint);
+        // Unsubscribe from push service
+        await subscription.unsubscribe();
+      }
+      setIsPushSubscribed(false);
+      setPushStatusText('Notifikasi dimatikan.');
+    } catch (err: any) {
+      console.error('Failed to unsubscribe:', err);
+      setPushStatusText(`Gagal menonaktifkan: ${err.message}`);
+    } finally {
+      setSubscribing(false);
+    }
+  };
   
   // Navigation tabs for Admin (Dashboard / Master Settings / CSV Archives)
   const [adminTab, setAdminTab] = useState<'DASHBOARD' | 'MASTER_PANEL' | 'CSV_ARCHIVE'>('DASHBOARD');
@@ -723,6 +879,25 @@ export default function App() {
           {/* Database Mode Switcher & User Profile Actions */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0" id="header_profile_actions">
             
+            {/* PWA Push Notification Bell Button */}
+            <button
+              onClick={() => setShowPushSetupModal(true)}
+              className={`relative p-1.5 sm:p-2.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                isPushSubscribed
+                  ? 'bg-orange-500/15 border-orange-500/30 text-orange-400 hover:bg-orange-500/25 hover:border-orange-500/50'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900/40 hover:border-slate-700'
+              }`}
+              title="Pengaturan Notifikasi Push"
+              id="notification_bell_trigger_button"
+            >
+              <Bell className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 ${isPushSubscribed ? 'animate-none' : 'animate-pulse'}`} />
+              {isPushSubscribed ? (
+                <span className="absolute top-1 sm:top-1.5 right-1 sm:right-1.5 w-2 h-2 rounded-full bg-orange-500 animate-ping" />
+              ) : (
+                <span className="absolute top-1 sm:top-1.5 right-1 sm:right-1.5 w-1.5 h-1.5 rounded-full bg-slate-600" />
+              )}
+            </button>
+
             {/* Custom dropdown wrapper targeting clicks */}
             <div className="relative" id="user_profile_dropdown_container">
               
@@ -1089,6 +1264,189 @@ export default function App() {
                   transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
                   className="w-1/2 h-full bg-gradient-to-r from-orange-600 to-amber-500 rounded-full"
                 />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 4. Guided PWA & Push Setup Modal */}
+      <AnimatePresence>
+        {showPushSetupModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 xs:p-4 bg-slate-950/85 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+              className={`border rounded-3xl p-5 xs:p-6 max-w-md w-full shadow-2xl relative overflow-hidden flex flex-col gap-4 font-sans ${
+                theme === 'light'
+                  ? 'bg-white border-slate-200 text-slate-800'
+                  : 'bg-slate-900 border-slate-800 text-slate-100 bg-gradient-to-b from-slate-900 to-slate-950'
+              }`}
+            >
+              {/* Corner ambient glow */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-bl-full pointer-events-none" />
+
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-slate-800/10 dark:border-slate-850 pb-3 select-none">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-500 shrink-0">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-xs sm:text-sm font-black tracking-wider uppercase font-mono leading-none">Notifikasi Push</h2>
+                    <p className="text-[10px] text-slate-400 font-sans tracking-wide leading-none mt-1">Hotel Harris Gubeng</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowPushSetupModal(false);
+                    setPushStatusText('');
+                  }}
+                  className="p-1 px-2.5 rounded-lg bg-slate-955 hover:bg-slate-850 hover:text-white text-[11px] font-bold border border-slate-800 text-slate-400 transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+
+              {/* Status Banner */}
+              <div className="space-y-1.5 text-left py-1 pr-1 select-none">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Status Perangkat Anda</span>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-850/50">
+                  <span className="text-xs font-semibold text-slate-300">Notifikasi Push:</span>
+                  <div className="flex items-center gap-1.5 shrink-0 font-mono text-[9px] font-black uppercase">
+                    {pushSupport === 'unsupported' ? (
+                      <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                        Tidak Didukung
+                      </span>
+                    ) : pushSupport === 'checking' ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+                        Memeriksa...
+                      </span>
+                    ) : pushSupport === 'ios-pwa-required' ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+                        Harus Instal PWA
+                      </span>
+                    ) : isPushSubscribed ? (
+                      <span className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                        ● AKTIF (ON)
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-750">
+                        NONAKTIF (OFF)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom push status reports */}
+              {pushStatusText && (
+                <div className="text-left p-3 rounded-xl bg-slate-950/80 border border-slate-850/80 text-[10.5px] font-medium leading-relaxed font-sans mt-0.5">
+                  <div className="flex items-center gap-1.5 mb-1 select-none text-[8.5px] font-bold uppercase tracking-wider font-mono text-orange-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                    <span>Laporan Pendaftaran</span>
+                  </div>
+                  <p className="text-slate-300">{pushStatusText}</p>
+                </div>
+              )}
+
+              {/* Support block guidelines */}
+              <div className="space-y-4 text-left text-xs text-slate-300 max-h-[220px] overflow-y-auto pr-1">
+                {/* Specific details for iPhone / iOS devices */}
+                {pushSupport === 'ios-pwa-required' && (
+                  <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/15 space-y-2">
+                    <h4 className="text-[11px] font-extrabold text-amber-400 uppercase tracking-widest font-mono flex items-center gap-1">
+                      ⚠️ KHUSUS PENGGUNA IPHONE (iOS):
+                    </h4>
+                    <p className="text-[11px] leading-relaxed text-slate-300">
+                      Apple Safari mewajibkan aplikasi web dipasang di Home Screen terlebih dahulu agar dapat mengizinkan push notifikasi. Ikuti langkah mudah berikut ini:
+                    </p>
+                    <ol className="list-decimal pl-4.5 space-y-1.5 text-[10.5px] text-slate-400 leading-normal">
+                      <li>Ketuk tombol <span className="font-extrabold text-slate-200">Share 📤</span> di bar bawah browser Safari Anda.</li>
+                      <li>Gulir ke bawah dan pilih <span className="font-extrabold text-slate-200">'Tambahkan ke Layar Utama' (Add to Home Screen) ➕</span>.</li>
+                      <li>Ketuk <span className="font-extrabold text-slate-200">Tambahkan (Add)</span> di pojok kanan atas layar.</li>
+                      <li>Buka kembali aplikasi <span className="font-black text-orange-400">Harris WO</span> melalui ikon baru di Home Screen ponsel Anda, lalu masuk ke menu bel ini kembali untuk mengizinkan notifikasi.</li>
+                    </ol>
+                  </div>
+                )}
+
+                {pushSupport === 'supported' && !isPushSubscribed && (
+                  <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-850/60 leading-relaxed text-slate-450 space-y-1.5">
+                    <p className="text-[11.5px] text-slate-300 font-bold">Kenapa mengaktifkan notifikasi?</p>
+                    <p className="text-[11px]">
+                      Dengan mengizinkan notifikasi push, perangkat atau ponsel Anda akan langsung bergetar dan memunculkan pemberitahuan instan saat aplikasi ditutup maupun saat perangkat sedang terkunci, ketika ada:
+                    </p>
+                    <ul className="list-disc pl-4 space-y-1 text-[10.5px]">
+                      <li>Adanya <span className="font-semibold text-slate-300">Work Order Baru</span> yang dimasukkan oleh tim.</li>
+                      <li>Perubahan status WO menjadi <span className="font-semibold text-slate-300">Complete</span> atau diselesaikan.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {pushSupport === 'unsupported' && (
+                  <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10 text-slate-400 text-[11px] leading-relaxed">
+                    Browser perangkat Anda belum mendukung standard Push Manager API. Silakan gunakan browser Google Chrome, Safari Mobile, Edge, atau Mozilla Firefox versi terbaru agar dapat menikmati notifikasi langsung.
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Buttons Footer */}
+              <div className="flex flex-col gap-2 pt-2 border-t border-slate-800/20 select-none">
+                {pushSupport === 'supported' && (
+                  <>
+                    {!isPushSubscribed ? (
+                      <button
+                        onClick={subscribeToPush}
+                        disabled={subscribing}
+                        className="w-full py-2.5 text-xs font-black tracking-wider uppercase font-mono rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-[0.98] transition-all text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        {subscribing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>MENGAKTIFKAN...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Bell className="w-3.5 h-3.5" />
+                            <span>AKTIFKAN NOTIFIKASI</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={unsubscribeFromPush}
+                        disabled={subscribing}
+                        className="w-full py-2.5 text-xs font-black tracking-wider uppercase font-mono rounded-xl bg-slate-900 border border-slate-800 hover:bg-red-500/10 hover:border-red-500/30 text-red-400 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        {subscribing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>MEMATIKAN...</span>
+                          </>
+                        ) : (
+                          <>
+                            <BellOff className="w-3.5 h-3.5" />
+                            <span>MATIKAN NOTIFIKASI</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </>
+                )}
+
+                {pushSupport === 'ios-pwa-required' && (
+                  <div className="text-center text-[10px] text-amber-500 font-bold tracking-wide uppercase font-mono animate-pulse select-none">
+                    Penting: Tambahkan aplikasi ke Home Screen terlebih dahulu
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

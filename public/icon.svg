@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#090d16" />
+  <g transform="translate(106, 106) scale(0.6)">
+    <!-- Elegant Wrench Silhouette -->
+    <path d="M432.8 135.7c-9.4-9.4-24.6-9.4-33.9 0L224 310.6l-20.7-20.7c-25-25-65.5-25-90.5 0l-53 53c-12.5 12.5-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l53-53c25-25 25-65.5 0-90.5L265.4 352l167.4-174.9c9.4-9.4 9.4-24.6 0-33.9l-31.4-31.4z" fill="#f97316" />
+    <path d="M128 384c-10.6 0-20-4.3-27.1-11.2l28.3-28.3c4.7-4.7 4.7-12.2 0-16.9s-12.2-4.7-16.9 0l-28.3 28.3c-6.9-7-11.2-16.5-11.2-27.1 0-21.2 17.2-38.4 38.4-38.4 10.6 0 20 4.3 27.1 11.2l-28.3 28.3c-4.7 4.7-4.7 12.2 0 16.9s12.2 4.7 16.9 0l28.3-28.3c6.9 7 11.2 16.5 11.2 27.1 0 21.2-17.2 38.4-38.4 38.4z" fill="#ffffff" opacity="0.8" />
+    <!-- Hotel Facade Graphic -->
+    <path d="M400 180h80v260h-80zM280 240h80v200h-80zM160 320h80v120h-80z" fill="none" stroke="#f97316" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" />
+    <path d="M110 440h390" stroke="#f97316" stroke-width="24" stroke-linecap="round" />
+  </g>
+</svg>
