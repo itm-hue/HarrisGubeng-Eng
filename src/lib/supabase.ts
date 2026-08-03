@@ -334,28 +334,50 @@ export const dbService = {
   async getTasks(filter?: TaskFilter): Promise<Task[]> {
     let tasks: Task[] = [];
     try {
-      let query = supabase.from('tasks').select('*');
-      
-      if (filter) {
-        if (filter.startDate) {
-          query = query.gte('tanggal', filter.startDate);
-        }
-        if (filter.endDate) {
-          query = query.lte('tanggal', filter.endDate);
-        }
-        if (filter.status && filter.status !== 'All' && filter.status !== 'Semua' && filter.status !== '') {
-          const dbStat = filter.status;
-          if (dbStat.toLowerCase() === 'selesai' || dbStat.toLowerCase() === 'complete' || dbStat.toLowerCase() === 'done') {
-            query = query.or('status.eq.Complete,status.eq.done,status.eq.Selesai');
-          } else if (dbStat.toLowerCase() === 'pending') {
-            query = query.eq('status', 'Pending');
+      let allDbRows: any[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        let query = supabase.from('tasks').select('*');
+        
+        if (filter) {
+          if (filter.startDate) {
+            query = query.gte('tanggal', filter.startDate);
           }
+          if (filter.endDate) {
+            query = query.lte('tanggal', filter.endDate);
+          }
+          if (filter.status && filter.status !== 'All' && filter.status !== 'Semua' && filter.status !== '') {
+            const dbStat = filter.status;
+            if (dbStat.toLowerCase() === 'selesai' || dbStat.toLowerCase() === 'complete' || dbStat.toLowerCase() === 'done') {
+              query = query.or('status.eq.Complete,status.eq.done,status.eq.Selesai');
+            } else if (dbStat.toLowerCase() === 'pending') {
+              query = query.eq('status', 'Pending');
+            }
+          }
+        }
+
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, error } = await query.order('created_at', { ascending: false }).range(from, to);
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allDbRows.push(...data);
+          if (data.length < pageSize) {
+            hasMore = false;
+          } else {
+            page++;
+          }
+        } else {
+          hasMore = false;
         }
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
-      if (error) throw error;
-      tasks = (data || []).map(mapTaskToFrontend);
+      tasks = allDbRows.map(mapTaskToFrontend);
     } catch (e) {
       console.error('Real Supabase tasks retrieval failed:', e);
       return [];

@@ -14,8 +14,14 @@ interface MetricCardsProps {
 
 export default function MetricCards({ tasks, currentUserRole }: MetricCardsProps) {
   const totalCards = tasks.length;
-  const completeCards = tasks.filter(t => t.status === 'Complete').length;
-  const pendingCards = tasks.filter(t => t.status === 'Pending').length;
+  const completeCards = tasks.filter(t => {
+    const s = (t.status || '').trim().toLowerCase();
+    return s === 'complete' || s === 'selesai' || s === 'done';
+  }).length;
+  const pendingCards = tasks.filter(t => {
+    const s = (t.status || '').trim().toLowerCase();
+    return s === 'pending';
+  }).length;
 
   const cardsSchema = [
     {

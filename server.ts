@@ -53,10 +53,29 @@ app.post('/api/send-web-push', async (req, res) => {
       return res.status(400).json({ error: 'Title and body are required.' });
     }
 
-    // Ambil semua subscriber dari tabel push_subscriptions
+    // Ambil daftar user id yang memiliki role 'Teknisi' dari database
+    const { data: techUsers, error: usersError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'Teknisi');
+
+    if (usersError) {
+      console.error('[PUSH SERVER] Gagal mengambil daftar Teknisi:', usersError);
+      return res.status(500).json({ error: usersError.message });
+    }
+
+    const techIds = techUsers ? techUsers.map(u => u.id) : [];
+
+    if (techIds.length === 0) {
+      console.log('[PUSH SERVER] Tidak ada user dengan role ' + 'Teknisi' + '.');
+      return res.json({ status: 'no_subscribers', message: 'No technician users found.' });
+    }
+
+    // Ambil subscriber dari tabel push_subscriptions yang dimiliki oleh para Teknisi saja
     const { data: subscriptions, error } = await supabase
       .from('push_subscriptions')
-      .select('*');
+      .select('*')
+      .in('user_id', techIds);
 
     if (error) {
       console.error('[PUSH SERVER] Gagal mengambil push_subscriptions dari Supabase:', error);
